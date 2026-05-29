@@ -3,8 +3,8 @@
 //  TaskBell
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct DatedTodoListView: View {
     let todos: [TodoItem]
@@ -20,7 +20,8 @@ struct DatedTodoListView: View {
         (sections(for: .weekly) + sections(for: .monthly))
             .sorted { first, second in
                 if first.startDate == second.startDate {
-                    return first.grouping.sortPriority < second.grouping.sortPriority
+                    return first.grouping.sortPriority
+                        < second.grouping.sortPriority
                 }
 
                 return first.startDate < second.startDate
@@ -31,7 +32,8 @@ struct DatedTodoListView: View {
         !timelineSections.isEmpty
     }
 
-    private func sections(for grouping: TodoListGrouping) -> [DatedTodoSection] {
+    private func sections(for grouping: TodoListGrouping) -> [DatedTodoSection]
+    {
         let groupedPairs = todos.flatMap { todo in
             todo.coveredDates(calendar: calendar).map { date in
                 (sectionStartDate(for: date, grouping: grouping), todo)
@@ -40,19 +42,31 @@ struct DatedTodoListView: View {
 
         let grouped = Dictionary(grouping: groupedPairs, by: \.0)
 
-        return grouped
+        return
+            grouped
             .map { date, pairs in
-                let uniqueTodos = Dictionary(pairs.map { ($0.1.persistentModelID, $0.1) }) { first, _ in first }
-                    .values
+                let uniqueTodos = Dictionary(
+                    pairs.map { ($0.1.persistentModelID, $0.1) }
+                ) { first, _ in first }
+                .values
 
                 return DatedTodoSection(
                     grouping: grouping,
                     startDate: date,
                     title: sectionTitle(for: date, grouping: grouping),
-                    todos: uniqueTodos
+                    todos:
+                        uniqueTodos
                         .sorted { first, second in
-                            let firstDate = first.relevantDate(for: date, calendar: calendar) ?? first.createdAt
-                            let secondDate = second.relevantDate(for: date, calendar: calendar) ?? second.createdAt
+                            let firstDate =
+                                first.relevantDate(
+                                    for: date,
+                                    calendar: calendar
+                                ) ?? first.createdAt
+                            let secondDate =
+                                second.relevantDate(
+                                    for: date,
+                                    calendar: calendar
+                                ) ?? second.createdAt
 
                             if firstDate == secondDate {
                                 return first.createdAt > second.createdAt
@@ -82,32 +96,47 @@ struct DatedTodoListView: View {
                 .listStyle(.insetGrouped)
             }
         }
-        .navigationTitle("투두")
         .sheet(item: $selectedTodo) { todo in
-            TodoEditorSheet(title: "할 일 수정", initialDraft: TodoDraft(todo: todo)) { draft in
+            TodoEditorSheet(
+                title: "할 일 수정",
+                initialDraft: TodoDraft(todo: todo)
+            ) { draft in
                 onUpdateTodo(todo, draft)
             }
             .presentationDetents([.large])
         }
     }
 
-    private func sectionStartDate(for date: Date, grouping: TodoListGrouping) -> Date {
+    private func sectionStartDate(for date: Date, grouping: TodoListGrouping)
+        -> Date
+    {
         switch grouping {
         case .weekly:
-            return calendar.dateInterval(of: .weekOfYear, for: date)?.start ?? calendar.startOfDay(for: date)
+            return calendar.dateInterval(of: .weekOfYear, for: date)?.start
+                ?? calendar.startOfDay(for: date)
         case .monthly:
-            return calendar.dateInterval(of: .month, for: date)?.start ?? calendar.startOfDay(for: date)
+            return calendar.dateInterval(of: .month, for: date)?.start
+                ?? calendar.startOfDay(for: date)
         }
     }
 
-    private func sectionTitle(for startDate: Date, grouping: TodoListGrouping) -> String {
+    private func sectionTitle(for startDate: Date, grouping: TodoListGrouping)
+        -> String
+    {
         switch grouping {
         case .weekly:
-            guard let weekEnd = calendar.date(byAdding: .day, value: 6, to: startDate) else {
+            guard
+                let weekEnd = calendar.date(
+                    byAdding: .day,
+                    value: 6,
+                    to: startDate
+                )
+            else {
                 return startDate.formatted(date: .complete, time: .omitted)
             }
 
-            return "\(startDate.formatted(date: .abbreviated, time: .omitted)) ~ \(weekEnd.formatted(date: .abbreviated, time: .omitted))"
+            return
+                "\(startDate.formatted(date: .abbreviated, time: .omitted)) ~ \(weekEnd.formatted(date: .abbreviated, time: .omitted))"
         case .monthly:
             return startDate.formatted(.dateTime.year().month(.wide))
         }
@@ -120,9 +149,12 @@ struct DatedTodoListView: View {
                     Button {
                         onToggleCompletion(todo)
                     } label: {
-                        Image(systemName: todo.isCompleted ? "checkmark.circle.fill" : "circle")
-                            .font(.title3)
-                            .foregroundStyle(todo.isCompleted ? .green : .secondary)
+                        Image(
+                            systemName: todo.isCompleted
+                                ? "checkmark.circle.fill" : "circle"
+                        )
+                        .font(.title3)
+                        .foregroundStyle(todo.isCompleted ? .green : .secondary)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(todo.isCompleted ? "완료 해제" : "완료")
@@ -177,7 +209,10 @@ private struct DatedTodoSectionHeader: View {
                 .foregroundStyle(section.grouping.tintColor)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(section.grouping.tintColor.opacity(0.12), in: Capsule())
+                .background(
+                    section.grouping.tintColor.opacity(0.12),
+                    in: Capsule()
+                )
         }
         .padding(.top, 4)
         .padding(.bottom, 2)
@@ -185,8 +220,8 @@ private struct DatedTodoSectionHeader: View {
     }
 }
 
-private extension TodoListGrouping {
-    var sortPriority: Int {
+extension TodoListGrouping {
+    fileprivate var sortPriority: Int {
         switch self {
         case .monthly:
             0
@@ -195,7 +230,7 @@ private extension TodoListGrouping {
         }
     }
 
-    var tintColor: Color {
+    fileprivate var tintColor: Color {
         switch self {
         case .weekly:
             .accentColor
@@ -219,7 +254,9 @@ struct SelectedDayTodoSheet: View {
     @State private var selectedTodo: TodoItem?
 
     private var title: String {
-        selectedDate.formatted(Date.FormatStyle(date: .complete, time: .omitted))
+        selectedDate.formatted(
+            Date.FormatStyle(date: .complete, time: .omitted)
+        )
     }
 
     private var summary: String {
@@ -260,13 +297,17 @@ struct SelectedDayTodoSheet: View {
                 }
             }
             .sheet(isPresented: $isPresentingNewTodoSheet) {
-                TodoEditorSheet(title: "새 할 일", initialDraft: initialDraft) { draft in
+                TodoEditorSheet(title: "새 할 일", initialDraft: initialDraft) {
+                    draft in
                     onAddTodo(draft)
                 }
                 .presentationDetents([.large])
             }
             .sheet(item: $selectedTodo) { todo in
-                TodoEditorSheet(title: "할 일 수정", initialDraft: TodoDraft(todo: todo)) { draft in
+                TodoEditorSheet(
+                    title: "할 일 수정",
+                    initialDraft: TodoDraft(todo: todo)
+                ) { draft in
                     onUpdateTodo(todo, draft)
                 }
                 .presentationDetents([.large])
@@ -287,9 +328,12 @@ struct SelectedDayTodoSheet: View {
                     Button {
                         onToggleCompletion(todo)
                     } label: {
-                        Image(systemName: todo.isCompleted ? "checkmark.circle.fill" : "circle")
-                            .font(.title3)
-                            .foregroundStyle(todo.isCompleted ? .green : .secondary)
+                        Image(
+                            systemName: todo.isCompleted
+                                ? "checkmark.circle.fill" : "circle"
+                        )
+                        .font(.title3)
+                        .foregroundStyle(todo.isCompleted ? .green : .secondary)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(todo.isCompleted ? "완료 해제" : "완료")
@@ -319,7 +363,9 @@ struct TodoRowView: View {
                 .strikethrough(todo.isCompleted)
                 .foregroundStyle(todo.isCompleted ? .secondary : .primary)
 
-            if !todo.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            if !todo.content.trimmingCharacters(in: .whitespacesAndNewlines)
+                .isEmpty
+            {
                 Text(todo.content)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -336,6 +382,34 @@ struct TodoRowView: View {
                 Text("\(todo.reminders.count)개의 미리알림")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+            }
+
+            if !todo.attachments.isEmpty {
+                HStack(spacing: 8) {
+                    ForEach(todo.attachments.sorted { $0.createdAt < $1.createdAt }.prefix(3)) { attachment in
+                        AttachmentThumbnail(attachment: TodoAttachmentDraft(attachment: attachment))
+                    }
+
+                    if todo.attachments.count > 3 {
+                        Text("+\(todo.attachments.count - 3)")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 56, height: 56)
+                            .background(.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+                    }
+                }
+                .padding(.top, 4)
+            }
+
+            if let latitude = todo.locationLatitude,
+               let longitude = todo.locationLongitude
+            {
+                Label(
+                    "\(latitude.formatted(.number.precision(.fractionLength(5)))), \(longitude.formatted(.number.precision(.fractionLength(5))))",
+                    systemImage: "mappin.and.ellipse"
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
             }
         }
     }

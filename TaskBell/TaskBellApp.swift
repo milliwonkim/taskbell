@@ -13,6 +13,7 @@ struct TaskBellApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             TodoItem.self,
+            TodoAttachment.self,
             Reminder.self,
         ])
         let cloudConfiguration = ModelConfiguration(

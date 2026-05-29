@@ -3,7 +3,10 @@
 //  TaskBell
 //
 
+import PhotosUI
 import SwiftUI
+import UIKit
+import UniformTypeIdentifiers
 
 struct TodoEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -17,6 +20,12 @@ struct TodoEditorSheet: View {
     @State private var scheduleMode: TodoScheduleMode
     @State private var scheduledStartAt: Date
     @State private var scheduledEndAt: Date
+    @State private var attachments: [TodoAttachmentDraft]
+    @State private var selectedMediaItems: [PhotosPickerItem] = []
+    @State private var isImportingMedia = false
+    @State private var locationLatitude: Double?
+    @State private var locationLongitude: Double?
+    @State private var isPresentingLocationPicker = false
     @State private var reminders: [ReminderDraft]
     @State private var isPresentingNewReminderSheet = false
     @State private var selectedReminder: ReminderDraft?
@@ -35,6 +44,9 @@ struct TodoEditorSheet: View {
         _scheduleMode = State(initialValue: initialDraft.scheduleMode == .dateRange ? .dateRange : .singleDay)
         _scheduledStartAt = State(initialValue: initialDraft.scheduledStartAt ?? .now)
         _scheduledEndAt = State(initialValue: initialDraft.scheduledEndAt ?? initialDraft.scheduledStartAt?.addingTimeInterval(3600) ?? .now.addingTimeInterval(3600))
+        _attachments = State(initialValue: initialDraft.attachments)
+        _locationLatitude = State(initialValue: initialDraft.locationLatitude)
+        _locationLongitude = State(initialValue: initialDraft.locationLongitude)
         _reminders = State(initialValue: initialDraft.reminders)
     }
 
@@ -44,6 +56,21 @@ struct TodoEditorSheet: View {
 
     private var sortedReminders: [ReminderDraft] {
         reminders.sorted { $0.fireDate < $1.fireDate }
+    }
+
+    private var sortedAttachments: [TodoAttachmentDraft] {
+        attachments.sorted { $0.createdAt < $1.createdAt }
+    }
+
+    private var selectedLocation: TodoLocationCoordinate? {
+        guard let locationLatitude, let locationLongitude else {
+            return nil
+        }
+
+        return TodoLocationCoordinate(
+            latitude: locationLatitude,
+            longitude: locationLongitude
+        )
     }
 
     private var normalizedScheduleEndAt: Date {
@@ -125,6 +152,56 @@ struct TodoEditorSheet: View {
                         Label("미리알림 추가", systemImage: "bell.badge")
                     }
                 }
+
+                Section("사진 및 동영상") {
+                    if sortedAttachments.isEmpty {
+                        Text("첨부된 사진이나 동영상이 없습니다.")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ForEach(sortedAttachments) { attachment in
+                            AttachmentDraftRow(attachment: attachment) {
+                                deleteAttachment(attachment)
+                            }
+                        }
+                    }
+
+                    PhotosPicker(
+                        selection: $selectedMediaItems,
+                        maxSelectionCount: 10,
+                        matching: .any(of: [.images, .videos])
+                    ) {
+                        Label("사진 또는 동영상 추가", systemImage: "photo.badge.plus")
+                    }
+
+                    if isImportingMedia {
+                        ProgressView("불러오는 중")
+                    }
+                }
+
+                Section("위치") {
+                    if let selectedLocation {
+                        TodoLocationSummaryView(coordinate: selectedLocation)
+
+                        Button(role: .destructive) {
+                            locationLatitude = nil
+                            locationLongitude = nil
+                        } label: {
+                            Label("위치 삭제", systemImage: "mappin.slash")
+                        }
+                    } else {
+                        Text("선택한 위치가 없습니다.")
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Button {
+                        isPresentingLocationPicker = true
+                    } label: {
+                        Label(
+                            selectedLocation == nil ? "지도에서 위치 선택" : "지도에서 위치 변경",
+                            systemImage: "map"
+                        )
+                    }
+                }
             }
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
@@ -144,6 +221,9 @@ struct TodoEditorSheet: View {
                                 scheduleMode: isScheduleEnabled ? scheduleMode : .none,
                                 scheduledStartAt: isScheduleEnabled ? scheduledStartAt : nil,
                                 scheduledEndAt: isScheduleEnabled && scheduleMode == .dateRange ? normalizedScheduleEndAt : nil,
+                                locationLatitude: locationLatitude,
+                                locationLongitude: locationLongitude,
+                                attachments: attachments.sorted { $0.createdAt < $1.createdAt },
                                 reminders: reminders.sorted { $0.fireDate < $1.fireDate }
                             )
                         )
@@ -164,7 +244,60 @@ struct TodoEditorSheet: View {
                 }
                 .presentationDetents([.medium, .large])
             }
+            .sheet(isPresented: $isPresentingLocationPicker) {
+                TodoLocationPickerSheet(initialCoordinate: selectedLocation) {
+                    coordinate in
+                    locationLatitude = coordinate.latitude
+                    locationLongitude = coordinate.longitude
+                }
+            }
+            .onChange(of: selectedMediaItems) { _, newItems in
+                Task {
+                    await importMedia(from: newItems)
+                    selectedMediaItems = []
+                }
+            }
         }
+    }
+
+    private func importMedia(from items: [PhotosPickerItem]) async {
+        guard !items.isEmpty else {
+            return
+        }
+
+        isImportingMedia = true
+        defer { isImportingMedia = false }
+
+        for item in items {
+            guard let contentType = item.supportedContentTypes.first(where: {
+                $0.conforms(to: .image) || $0.conforms(to: .movie)
+            }) else {
+                continue
+            }
+
+            do {
+                guard let data = try await item.loadTransferable(type: Data.self) else {
+                    continue
+                }
+
+                let kind: TodoAttachmentKind = contentType.conforms(to: .movie) ? .video : .photo
+                let fileExtension = contentType.preferredFilenameExtension ?? (kind == .photo ? "jpg" : "mov")
+                attachments.append(
+                    TodoAttachmentDraft(
+                        kind: kind,
+                        contentType: contentType.identifier,
+                        fileName: "\(kind.rawValue)-\(UUID().uuidString).\(fileExtension)",
+                        data: data
+                    )
+                )
+            } catch {
+                continue
+            }
+        }
+    }
+
+    private func deleteAttachment(_ attachment: TodoAttachmentDraft) {
+        attachments.removeAll { $0.id == attachment.id }
     }
 
     private func replaceReminder(_ draft: ReminderDraft) {
@@ -179,5 +312,57 @@ struct TodoEditorSheet: View {
         let sorted = sortedReminders
         let idsToDelete = offsets.map { sorted[$0].id }
         reminders.removeAll { idsToDelete.contains($0.id) }
+    }
+}
+
+private struct AttachmentDraftRow: View {
+    let attachment: TodoAttachmentDraft
+    let onDelete: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            AttachmentThumbnail(attachment: attachment)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Label(attachment.kind.title, systemImage: attachment.kind == .photo ? "photo" : "video")
+                    .font(.subheadline.weight(.semibold))
+
+                Text(ByteCountFormatter.string(fromByteCount: Int64(attachment.data.count), countStyle: .file))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Button(role: .destructive, action: onDelete) {
+                Image(systemName: "trash")
+            }
+            .buttonStyle(.borderless)
+            .accessibilityLabel("첨부 삭제")
+        }
+    }
+}
+
+struct AttachmentThumbnail: View {
+    let attachment: TodoAttachmentDraft
+
+    var body: some View {
+        Group {
+            if attachment.kind == .photo, let image = UIImage(data: attachment.data) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(.secondary.opacity(0.18))
+                    Image(systemName: "play.rectangle.fill")
+                        .font(.title2)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .frame(width: 56, height: 56)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 }

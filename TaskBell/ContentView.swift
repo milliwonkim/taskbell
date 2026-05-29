@@ -70,70 +70,95 @@ struct ContentView: View {
         nonmutating set { appAppearanceRawValue = newValue.rawValue }
     }
 
+    private var calendarNavigationTitle: String {
+        displayedMonth.formatted(.dateTime.year().month(.wide))
+    }
+
+    private var widgetSnapshotSignature: String {
+        todos.map { todo in
+            [
+                String(describing: todo.persistentModelID),
+                todo.title,
+                todo.content,
+                String(todo.isCompleted),
+                todo.scheduleModeRawValue,
+                String(todo.scheduledStartAt?.timeIntervalSinceReferenceDate ?? 0),
+                String(todo.scheduledEndAt?.timeIntervalSinceReferenceDate ?? 0),
+                String(todo.createdAt.timeIntervalSinceReferenceDate),
+            ].joined(separator: "|")
+        }
+        .joined(separator: "\n")
+    }
+
     var body: some View {
         TabView(selection: $selectedTab) {
-            NavigationStack {
-                ZStack {
-                    Color(.systemBackground)
-                        .ignoresSafeArea()
+            Tab("Calendar", systemImage: "calendar", value: .calendar) {
+                NavigationStack {
+                    ZStack {
+                        Color(.systemBackground)
+                            .ignoresSafeArea()
 
-                    MonthCalendarView(
-                        selectedDate: $selectedDate,
-                        displayedMonth: $displayedMonth,
-                        todos: todos
-                    ) { date in
-                        withAnimation(.snappy) {
-                            selectedDate = date
-                            displayedMonth = date
-                            isShowingSelectedDayPanel = true
+                        MonthCalendarView(
+                            selectedDate: $selectedDate,
+                            displayedMonth: $displayedMonth,
+                            todos: todos
+                        ) { date in
+                            withAnimation(.snappy) {
+                                selectedDate = date
+                                displayedMonth = date
+                                isShowingSelectedDayPanel = true
+                            }
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.top, 4)
+                        .padding(.bottom, 16)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                    .navigationTitle(calendarNavigationTitle)
+                    .navigationBarTitleDisplayMode(.large)
+                    .toolbarBackground(.hidden, for: .navigationBar)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            addTodoToolbarButton
                         }
                     }
-                    .padding(.horizontal, 14)
-                    .padding(.top, 4)
-                    .padding(.bottom, 16)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .navigationTitle("")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbarBackground(.hidden, for: .navigationBar)
             }
-            .tabItem {
-                Label("캘린더", systemImage: "calendar")
-            }
-            .tag(MainTab.calendar)
 
-            NavigationStack {
-                DatedTodoListView(
-                    todos: todos,
-                    onToggleCompletion: toggleTodoCompletion,
-                    onUpdateTodo: updateTodo,
-                    onDelete: deleteTodos
-                )
-            }
-            .tabItem {
-                Label("투두", systemImage: "checklist")
-            }
-            .tag(MainTab.todos)
-
-            NavigationStack {
-                SettingsView(
-                    appearance: Binding(
-                        get: { appAppearance },
-                        set: { appAppearance = $0 }
+            Tab("TodoList", systemImage: "checklist", value: .todos) {
+                NavigationStack {
+                    DatedTodoListView(
+                        todos: todos,
+                        onToggleCompletion: toggleTodoCompletion,
+                        onUpdateTodo: updateTodo,
+                        onDelete: deleteTodos
                     )
-                )
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            addTodoToolbarButton
+                        }
+                    }
+                }
             }
-            .tabItem {
-                Label("설정", systemImage: "gearshape")
+
+            Tab("Setting", systemImage: "gearshape", value: .settings) {
+                NavigationStack {
+                    SettingsView(
+                        appearance: Binding(
+                            get: { appAppearance },
+                            set: { appAppearance = $0 }
+                        )
+                    )
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            addTodoToolbarButton
+                        }
+                    }
+                }
             }
-            .tag(MainTab.settings)
+
         }
         .preferredColorScheme(appAppearance.colorScheme)
-        .overlay(alignment: .bottomTrailing) {
-            addTodoFloatingButton
-                .padding(.trailing, 24)
-                .padding(.bottom, 82)
-        }
         .sheet(isPresented: $isPresentingNewTodoSheet) {
             TodoEditorSheet(title: "새 할 일", initialDraft: selectedDateDraft) {
                 draft in
@@ -160,19 +185,27 @@ struct ContentView: View {
         .task {
             _ = await NotificationScheduler.requestAuthorization()
             await NotificationScheduler.rescheduleAll(todos: todos)
+            refreshWidgetSnapshot()
+        }
+        .onChange(of: widgetSnapshotSignature) { _, _ in
+            refreshWidgetSnapshot()
         }
     }
 
-    private var addTodoFloatingButton: some View {
-        LiquidGlassAddButton {
+    private var addTodoToolbarButton: some View {
+        Button {
             isPresentingNewTodoSheet = true
+        } label: {
+            Image(systemName: "plus")
         }
+        .accessibilityLabel("할 일 추가")
     }
 
     private func toggleTodoCompletion(_ todo: TodoItem) {
         withAnimation {
             todo.isCompleted.toggle()
         }
+        refreshWidgetSnapshot()
     }
 
     private func addTodo(_ draft: TodoDraft) {
@@ -183,9 +216,17 @@ struct ContentView: View {
                 isCompleted: draft.isCompleted,
                 scheduleMode: draft.scheduleMode,
                 scheduledStartAt: draft.scheduledStartAt,
-                scheduledEndAt: draft.scheduledEndAt
+                scheduledEndAt: draft.scheduledEndAt,
+                locationLatitude: draft.locationLatitude,
+                locationLongitude: draft.locationLongitude
             )
             modelContext.insert(todo)
+
+            for attachmentDraft in draft.attachments {
+                let attachment = TodoAttachment(draft: attachmentDraft, todo: todo)
+                modelContext.insert(attachment)
+                todo.attachments.append(attachment)
+            }
 
             for reminderDraft in draft.reminders {
                 let reminder = Reminder(draft: reminderDraft, todo: todo)
@@ -200,6 +241,8 @@ struct ContentView: View {
                     )
                 }
             }
+
+            refreshWidgetSnapshot(with: todos + [todo])
         }
     }
 
@@ -210,6 +253,30 @@ struct ContentView: View {
         todo.scheduleMode = draft.scheduleMode
         todo.scheduledStartAt = draft.scheduledStartAt
         todo.scheduledEndAt = draft.scheduledEndAt
+        todo.locationLatitude = draft.locationLatitude
+        todo.locationLongitude = draft.locationLongitude
+
+        let draftAttachmentIDs = Set(draft.attachments.map(\.id))
+        let existingAttachments = todo.attachments
+        let existingAttachmentsByID = Dictionary(
+            uniqueKeysWithValues: existingAttachments.map { ($0.id, $0) }
+        )
+
+        for attachment in existingAttachments
+        where !draftAttachmentIDs.contains(attachment.id) {
+            modelContext.delete(attachment)
+        }
+        todo.attachments.removeAll { !draftAttachmentIDs.contains($0.id) }
+
+        for attachmentDraft in draft.attachments {
+            if let attachment = existingAttachmentsByID[attachmentDraft.id] {
+                attachment.apply(attachmentDraft)
+            } else {
+                let attachment = TodoAttachment(draft: attachmentDraft, todo: todo)
+                modelContext.insert(attachment)
+                todo.attachments.append(attachment)
+            }
+        }
 
         let draftIDs = Set(draft.reminders.map(\.id))
         let existingReminders = todo.reminders
@@ -250,9 +317,12 @@ struct ContentView: View {
                 }
             }
         }
+        refreshWidgetSnapshot()
     }
 
     private func deleteTodos(offsets: IndexSet, from visibleTodos: [TodoItem]) {
+        let deletedIDs = Set(offsets.map { visibleTodos[$0].persistentModelID })
+
         withAnimation {
             for index in offsets {
                 let todo = visibleTodos[index]
@@ -266,10 +336,21 @@ struct ContentView: View {
                 modelContext.delete(todo)
             }
         }
+        refreshWidgetSnapshot(
+            with: todos.filter { !deletedIDs.contains($0.persistentModelID) }
+        )
+    }
+
+    private func refreshWidgetSnapshot(with snapshotTodos: [TodoItem]? = nil) {
+        try? modelContext.save()
+        WidgetSnapshotStore.save(todos: snapshotTodos ?? todos)
     }
 }
 
 #Preview {
     ContentView()
-        .modelContainer(for: [TodoItem.self, Reminder.self], inMemory: true)
+        .modelContainer(
+            for: [TodoItem.self, TodoAttachment.self, Reminder.self],
+            inMemory: true
+        )
 }

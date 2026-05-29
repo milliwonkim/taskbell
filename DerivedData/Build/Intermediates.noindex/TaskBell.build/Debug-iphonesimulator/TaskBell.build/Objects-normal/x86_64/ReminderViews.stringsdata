@@ -1,0 +1,96 @@
+{
+  "source": "/Users/kimkiwon/Desktop/TaskBell/TaskBell/ReminderViews.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "날짜",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 85
+        }
+      },
+      {
+        "comment": "",
+        "key": "시간",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 94
+        }
+      },
+      {
+        "comment": "",
+        "key": "반복",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 104
+        }
+      },
+      {
+        "comment": "",
+        "key": "알림 방식",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 112
+        }
+      },
+      {
+        "comment": "",
+        "key": "알림 날짜",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 87
+        }
+      },
+      {
+        "comment": "",
+        "key": "알림 시간",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 96
+        }
+      },
+      {
+        "comment": "",
+        "key": "반복",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 105
+        }
+      },
+      {
+        "comment": "",
+        "key": "방식",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 113
+        }
+      },
+      {
+        "comment": "",
+        "key": "활성화",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 125
+        }
+      },
+      {
+        "comment": "",
+        "key": "취소",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 132
+        }
+      },
+      {
+        "comment": "",
+        "key": "저장",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 137
+        }
+      }
+    ]
+  },
+  "version": 1
+}

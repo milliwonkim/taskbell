@@ -24,3 +24,26 @@ extension Reminder {
         isEnabled = draft.isEnabled
     }
 }
+
+extension TodoAttachment {
+    convenience init(draft: TodoAttachmentDraft, todo: TodoItem? = nil) {
+        self.init(
+            id: draft.id,
+            kind: draft.kind,
+            contentType: draft.contentType,
+            fileName: draft.fileName,
+            data: draft.data,
+            createdAt: draft.createdAt,
+            todo: todo
+        )
+    }
+
+    func apply(_ draft: TodoAttachmentDraft) {
+        id = draft.id
+        kind = draft.kind
+        contentType = draft.contentType
+        fileName = draft.fileName
+        data = draft.data
+        createdAt = draft.createdAt
+    }
+}

@@ -13,10 +13,7 @@ struct MonthCalendarView: View {
 
     private let calendar = Calendar.current
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
-
-    private var monthTitle: String {
-        displayedMonth.formatted(.dateTime.year().month(.wide))
-    }
+    private let swipeThreshold: CGFloat = 60
 
     private var monthSummary: String {
         let monthTodoCount = monthDays.reduce(0) { total, day in
@@ -69,19 +66,13 @@ struct MonthCalendarView: View {
     var body: some View {
         GeometryReader { proxy in
             let rowCount = CGFloat(max(monthDays.count / 7, 1))
-            let dayHeight = max(76, (proxy.size.height - 96) / rowCount)
+            let dayHeight = max(76, (proxy.size.height - 54) / rowCount)
 
             VStack(spacing: 10) {
                 HStack {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(monthTitle)
-                            .font(.largeTitle.bold())
-                            .minimumScaleFactor(0.8)
-
-                        Text(monthSummary)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
+                    Text(monthSummary)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
 
                     Spacer()
 
@@ -146,7 +137,25 @@ struct MonthCalendarView: View {
                 }
             }
             .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
+            .contentShape(Rectangle())
+            .simultaneousGesture(monthSwipeGesture)
         }
+    }
+
+    private var monthSwipeGesture: some Gesture {
+        DragGesture(minimumDistance: 30)
+            .onEnded { value in
+                let horizontalDistance = value.translation.width
+                let verticalDistance = value.translation.height
+
+                guard abs(horizontalDistance) > swipeThreshold,
+                      abs(horizontalDistance) > abs(verticalDistance) * 1.5
+                else {
+                    return
+                }
+
+                moveMonth(by: horizontalDistance > 0 ? -1 : 1)
+            }
     }
 
     private func moveMonth(by value: Int) {

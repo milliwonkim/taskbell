@@ -16,7 +16,7 @@ struct SettingsView: View {
                         Text(appearance.title).tag(appearance)
                     }
                 }
-                .pickerStyle(.inline)
+                .pickerStyle(.menu)
             }
         }
         .navigationTitle("설정")
