@@ -1,0 +1,424 @@
+{
+  "source": "/Users/kimkiwon/Desktop/TaskBell/TaskBell/ContentView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 129
+        }
+      },
+      {
+        "comment": "",
+        "key": "할 일 추가",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 137
+        }
+      },
+      {
+        "comment": "",
+        "key": "캘린더",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 143
+        }
+      },
+      {
+        "comment": "",
+        "key": "투두",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 156
+        }
+      },
+      {
+        "comment": "",
+        "key": "설정",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 166
+        }
+      },
+      {
+        "comment": "",
+        "key": "투두",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 365
+        }
+      },
+      {
+        "comment": "",
+        "key": "아래 + 버튼으로 날짜가 있는 할 일을 추가하세요.",
+        "location": {
+          "startingColumn": 39,
+          "startingLine": 346
+        }
+      },
+      {
+        "comment": "",
+        "key": "날짜가 지정된 할 일이 없습니다",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 344
+        }
+      },
+      {
+        "comment": "",
+        "key": "완료 해제",
+        "location": {
+          "startingColumn": 60,
+          "startingLine": 435
+        }
+      },
+      {
+        "comment": "",
+        "key": "완료",
+        "location": {
+          "startingColumn": 78,
+          "startingLine": 435
+        }
+      },
+      {
+        "comment": "",
+        "key": "할 일 추가",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 481
+        }
+      },
+      {
+        "comment": "",
+        "key": "할 일 추가",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 472
+        }
+      },
+      {
+        "comment": "",
+        "key": "설정",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 504
+        }
+      },
+      {
+        "comment": "",
+        "key": "화면 모드",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 495
+        }
+      },
+      {
+        "comment": "",
+        "key": "표시 방식",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 496
+        }
+      },
+      {
+        "comment": "",
+        "key": "오늘",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 588
+        }
+      },
+      {
+        "comment": "",
+        "key": "이전 달",
+        "location": {
+          "startingColumn": 45,
+          "startingLine": 604
+        }
+      },
+      {
+        "comment": "",
+        "key": "다음 달",
+        "location": {
+          "startingColumn": 45,
+          "startingLine": 612
+        }
+      },
+      {
+        "comment": "",
+        "key": "+%lld",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 798
+        }
+      },
+      {
+        "comment": "",
+        "key": "추가 할 일 %lld개",
+        "location": {
+          "startingColumn": 41,
+          "startingLine": 801
+        }
+      },
+      {
+        "comment": "",
+        "key": "오른쪽 위 + 버튼으로 이 날짜에 할 일을 추가하세요.",
+        "location": {
+          "startingColumn": 43,
+          "startingLine": 843
+        }
+      },
+      {
+        "comment": "",
+        "key": "이 날짜의 할 일이 없습니다",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 841
+        }
+      },
+      {
+        "comment": "",
+        "key": "할 일 추가",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 864
+        }
+      },
+      {
+        "comment": "",
+        "key": "완료 해제",
+        "location": {
+          "startingColumn": 68,
+          "startingLine": 895
+        }
+      },
+      {
+        "comment": "",
+        "key": "완료",
+        "location": {
+          "startingColumn": 86,
+          "startingLine": 895
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld개의 미리알림",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 936
+        }
+      },
+      {
+        "comment": "",
+        "key": "할 일",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 1134
+        }
+      },
+      {
+        "comment": "",
+        "key": "언제 할까요",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 1152
+        }
+      },
+      {
+        "comment": "",
+        "key": "미리알림",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 1184
+        }
+      },
+      {
+        "comment": "",
+        "key": "제목",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 1135
+        }
+      },
+      {
+        "comment": "",
+        "key": "완료",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 1149
+        }
+      },
+      {
+        "comment": "",
+        "key": "내용",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 1139
+        }
+      },
+      {
+        "comment": "",
+        "key": "일정 설정",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 1153
+        }
+      },
+      {
+        "comment": "",
+        "key": "선택 방식",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 1156
+        }
+      },
+      {
+        "comment": "",
+        "key": "할 날짜와 시간",
+        "location": {
+          "startingColumn": 58,
+          "startingLine": 1163
+        }
+      },
+      {
+        "comment": "",
+        "key": "시작 날짜와 시간",
+        "location": {
+          "startingColumn": 83,
+          "startingLine": 1163
+        }
+      },
+      {
+        "comment": "",
+        "key": "종료 날짜와 시간",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1175
+        }
+      },
+      {
+        "comment": "",
+        "key": "미리알림이 없습니다.",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 1186
+        }
+      },
+      {
+        "comment": "",
+        "key": "미리알림 추가",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 1203
+        }
+      },
+      {
+        "comment": "",
+        "key": "취소",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 1211
+        }
+      },
+      {
+        "comment": "",
+        "key": "저장",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 1216
+        }
+      },
+      {
+        "comment": "",
+        "key": "날짜",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 1392
+        }
+      },
+      {
+        "comment": "",
+        "key": "시간",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 1401
+        }
+      },
+      {
+        "comment": "",
+        "key": "반복",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 1411
+        }
+      },
+      {
+        "comment": "",
+        "key": "알림 방식",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 1419
+        }
+      },
+      {
+        "comment": "",
+        "key": "알림 날짜",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 1394
+        }
+      },
+      {
+        "comment": "",
+        "key": "알림 시간",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 1403
+        }
+      },
+      {
+        "comment": "",
+        "key": "반복",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 1412
+        }
+      },
+      {
+        "comment": "",
+        "key": "방식",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 1420
+        }
+      },
+      {
+        "comment": "",
+        "key": "활성화",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 1432
+        }
+      },
+      {
+        "comment": "",
+        "key": "취소",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 1439
+        }
+      },
+      {
+        "comment": "",
+        "key": "저장",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 1444
+        }
+      }
+    ]
+  },
+  "version": 1
+}

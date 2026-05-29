@@ -1,0 +1,88 @@
+{
+  "source": "/Users/kimkiwon/Desktop/TaskBell/TaskBell/TodoListViews.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "투두",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 85
+        }
+      },
+      {
+        "comment": "",
+        "key": "오른쪽 아래 + 버튼으로 날짜가 있는 할 일을 추가하세요.",
+        "location": {
+          "startingColumn": 39,
+          "startingLine": 74
+        }
+      },
+      {
+        "comment": "",
+        "key": "날짜가 지정된 할 일이 없습니다",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 72
+        }
+      },
+      {
+        "comment": "",
+        "key": "완료 해제",
+        "location": {
+          "startingColumn": 60,
+          "startingLine": 128
+        }
+      },
+      {
+        "comment": "",
+        "key": "완료",
+        "location": {
+          "startingColumn": 78,
+          "startingLine": 128
+        }
+      },
+      {
+        "comment": "",
+        "key": "오른쪽 아래 + 버튼으로 이 날짜에 할 일을 추가하세요.",
+        "location": {
+          "startingColumn": 43,
+          "startingLine": 236
+        }
+      },
+      {
+        "comment": "",
+        "key": "이 날짜의 할 일이 없습니다",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 234
+        }
+      },
+      {
+        "comment": "",
+        "key": "완료 해제",
+        "location": {
+          "startingColumn": 60,
+          "startingLine": 295
+        }
+      },
+      {
+        "comment": "",
+        "key": "완료",
+        "location": {
+          "startingColumn": 78,
+          "startingLine": 295
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld개의 미리알림",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 336
+        }
+      }
+    ]
+  },
+  "version": 1
+}

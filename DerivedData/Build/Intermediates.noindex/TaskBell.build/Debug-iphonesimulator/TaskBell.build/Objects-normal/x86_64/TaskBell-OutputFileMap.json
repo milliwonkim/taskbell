@@ -1,0 +1,59 @@
+{
+  "" : {
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/TaskBell-primary.dia",
+    "emit-module-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/TaskBell-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/TaskBell-primary-emit-module.dia",
+    "pch" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/TaskBell-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/TaskBell-primary.swiftdeps"
+  },
+  "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/GeneratedAssetSymbols~partial.swiftmodule"
+  },
+  "/Users/kimkiwon/Desktop/TaskBell/TaskBell/ContentView.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/ContentView.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/ContentView.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/ContentView.dia",
+    "index-unit-output-path" : "/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/ContentView.o",
+    "llvm-bc" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/ContentView.bc",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/ContentView.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/ContentView.swiftdeps",
+    "swiftmodule" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/ContentView~partial.swiftmodule"
+  },
+  "/Users/kimkiwon/Desktop/TaskBell/TaskBell/Item.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/Item.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/Item.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/Item.dia",
+    "index-unit-output-path" : "/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/Item.o",
+    "llvm-bc" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/Item.bc",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/Item.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/Item.swiftdeps",
+    "swiftmodule" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/Item~partial.swiftmodule"
+  },
+  "/Users/kimkiwon/Desktop/TaskBell/TaskBell/NotificationScheduler.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/NotificationScheduler.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/NotificationScheduler.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/NotificationScheduler.dia",
+    "index-unit-output-path" : "/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/NotificationScheduler.o",
+    "llvm-bc" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/NotificationScheduler.bc",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/NotificationScheduler.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/NotificationScheduler.swiftdeps",
+    "swiftmodule" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/NotificationScheduler~partial.swiftmodule"
+  },
+  "/Users/kimkiwon/Desktop/TaskBell/TaskBell/TaskBellApp.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/TaskBellApp.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/TaskBellApp.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/TaskBellApp.dia",
+    "index-unit-output-path" : "/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/TaskBellApp.o",
+    "llvm-bc" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/TaskBellApp.bc",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/TaskBellApp.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/TaskBellApp.swiftdeps",
+    "swiftmodule" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/x86_64/TaskBellApp~partial.swiftmodule"
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "source": "/Users/kimkiwon/Desktop/TaskBell/TaskBell/TodoEditorSheet.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "할 일",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 56
+        }
+      },
+      {
+        "comment": "",
+        "key": "언제 할까요",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 74
+        }
+      },
+      {
+        "comment": "",
+        "key": "미리알림",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 106
+        }
+      },
+      {
+        "comment": "",
+        "key": "제목",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 57
+        }
+      },
+      {
+        "comment": "",
+        "key": "완료",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 71
+        }
+      },
+      {
+        "comment": "",
+        "key": "내용",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 61
+        }
+      },
+      {
+        "comment": "",
+        "key": "일정 설정",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 75
+        }
+      },
+      {
+        "comment": "",
+        "key": "선택 방식",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 78
+        }
+      },
+      {
+        "comment": "",
+        "key": "할 날짜와 시간",
+        "location": {
+          "startingColumn": 58,
+          "startingLine": 85
+        }
+      },
+      {
+        "comment": "",
+        "key": "시작 날짜와 시간",
+        "location": {
+          "startingColumn": 83,
+          "startingLine": 85
+        }
+      },
+      {
+        "comment": "",
+        "key": "종료 날짜와 시간",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 97
+        }
+      },
+      {
+        "comment": "",
+        "key": "미리알림이 없습니다.",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 108
+        }
+      },
+      {
+        "comment": "",
+        "key": "미리알림 추가",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 125
+        }
+      },
+      {
+        "comment": "",
+        "key": "취소",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 133
+        }
+      },
+      {
+        "comment": "",
+        "key": "저장",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 138
+        }
+      }
+    ]
+  },
+  "version": 1
+}

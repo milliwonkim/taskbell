@@ -1,0 +1,32 @@
+{
+  "source": "/Users/kimkiwon/Desktop/TaskBell/TaskBell/SettingsView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "설정",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 22
+        }
+      },
+      {
+        "comment": "",
+        "key": "화면 모드",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 13
+        }
+      },
+      {
+        "comment": "",
+        "key": "표시 방식",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 14
+        }
+      }
+    ]
+  },
+  "version": 1
+}

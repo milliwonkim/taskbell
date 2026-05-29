@@ -1,0 +1,48 @@
+{
+  "source": "/Users/kimkiwon/Desktop/TaskBell/TaskBell/MonthCalendarView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "오늘",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 88
+        }
+      },
+      {
+        "comment": "",
+        "key": "이전 달",
+        "location": {
+          "startingColumn": 45,
+          "startingLine": 104
+        }
+      },
+      {
+        "comment": "",
+        "key": "다음 달",
+        "location": {
+          "startingColumn": 45,
+          "startingLine": 112
+        }
+      },
+      {
+        "comment": "",
+        "key": "+%lld",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 287
+        }
+      },
+      {
+        "comment": "",
+        "key": "추가 할 일 %lld개",
+        "location": {
+          "startingColumn": 41,
+          "startingLine": 290
+        }
+      }
+    ]
+  },
+  "version": 1
+}

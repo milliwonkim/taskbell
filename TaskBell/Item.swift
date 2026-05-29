@@ -1,0 +1,161 @@
+//
+//  Item.swift
+//  TaskBell
+//
+//  Created by 김기원 on 5/29/26.
+//
+
+import Foundation
+import SwiftData
+
+@Model
+final class TodoItem {
+    var title: String = ""
+    var content: String = ""
+    var isCompleted: Bool = false
+    var scheduleModeRawValue: String = TodoScheduleMode.none.rawValue
+    var scheduledStartAt: Date?
+    var scheduledEndAt: Date?
+    var createdAt: Date = Date()
+
+    @Relationship(deleteRule: .cascade, inverse: \Reminder.todo)
+    var reminders: [Reminder] = []
+
+    init(
+        title: String,
+        content: String = "",
+        isCompleted: Bool = false,
+        scheduleMode: TodoScheduleMode = .none,
+        scheduledStartAt: Date? = nil,
+        scheduledEndAt: Date? = nil,
+        createdAt: Date = .now,
+        reminders: [Reminder] = []
+    ) {
+        self.title = title
+        self.content = content
+        self.isCompleted = isCompleted
+        self.scheduleModeRawValue = scheduleMode.rawValue
+        self.scheduledStartAt = scheduledStartAt
+        self.scheduledEndAt = scheduledEndAt
+        self.createdAt = createdAt
+        self.reminders = reminders
+    }
+
+    var scheduleMode: TodoScheduleMode {
+        get { TodoScheduleMode(rawValue: scheduleModeRawValue) ?? .none }
+        set { scheduleModeRawValue = newValue.rawValue }
+    }
+}
+
+enum TodoScheduleMode: String, CaseIterable, Identifiable, Codable {
+    case none
+    case singleDay
+    case dateRange
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .none:
+            "없음"
+        case .singleDay:
+            "하루"
+        case .dateRange:
+            "기간"
+        }
+    }
+}
+
+@Model
+final class Reminder {
+    var id: UUID = UUID()
+    var fireDate: Date = Date()
+    var repeatRuleRawValue: String = ReminderRepeatRule.once.rawValue
+    var deliveryStyleRawValue: String = ReminderDeliveryStyle.notificationAndVibration.rawValue
+    var isEnabled: Bool = true
+    var createdAt: Date = Date()
+
+    var todo: TodoItem?
+
+    init(
+        id: UUID = UUID(),
+        fireDate: Date = .now.addingTimeInterval(3600),
+        repeatRule: ReminderRepeatRule = .once,
+        deliveryStyle: ReminderDeliveryStyle = .notificationAndVibration,
+        isEnabled: Bool = true,
+        createdAt: Date = .now,
+        todo: TodoItem? = nil
+    ) {
+        self.id = id
+        self.fireDate = fireDate
+        self.repeatRuleRawValue = repeatRule.rawValue
+        self.deliveryStyleRawValue = deliveryStyle.rawValue
+        self.isEnabled = isEnabled
+        self.createdAt = createdAt
+        self.todo = todo
+    }
+
+    var repeatRule: ReminderRepeatRule {
+        get { ReminderRepeatRule(rawValue: repeatRuleRawValue) ?? .once }
+        set { repeatRuleRawValue = newValue.rawValue }
+    }
+
+    var deliveryStyle: ReminderDeliveryStyle {
+        get { ReminderDeliveryStyle(rawValue: deliveryStyleRawValue) ?? .notificationAndVibration }
+        set { deliveryStyleRawValue = newValue.rawValue }
+    }
+
+    var notificationIdentifier: String {
+        "reminder-\(id.uuidString)"
+    }
+}
+
+enum ReminderRepeatRule: String, CaseIterable, Identifiable, Codable {
+    case once
+    case daily
+    case weekly
+    case monthly
+    case yearly
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .once:
+            "한 번"
+        case .daily:
+            "매일"
+        case .weekly:
+            "매주"
+        case .monthly:
+            "매월"
+        case .yearly:
+            "매년"
+        }
+    }
+}
+
+enum ReminderDeliveryStyle: String, CaseIterable, Identifiable, Codable {
+    case notificationOnly
+    case notificationAndVibration
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .notificationOnly:
+            "푸시 알림"
+        case .notificationAndVibration:
+            "푸시 알림 + 진동"
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .notificationOnly:
+            "소리와 진동 없이 알림만 표시"
+        case .notificationAndVibration:
+            "기기 설정에 따라 소리와 진동 사용"
+        }
+    }
+}
