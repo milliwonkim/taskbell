@@ -51,12 +51,12 @@ struct TodoDraft {
             scheduledEndAt: todo.scheduledEndAt,
             locationLatitude: todo.locationLatitude,
             locationLongitude: todo.locationLongitude,
-            attachments: todo.attachments
+            attachments: (todo.attachments ?? [])
                 .sorted { $0.createdAt < $1.createdAt }
                 .map { attachment in
                     TodoAttachmentDraft(attachment: attachment)
                 },
-            reminders: todo.reminders
+            reminders: (todo.reminders ?? [])
                 .sorted { $0.fireDate < $1.fireDate }
                 .map { reminder in
                     ReminderDraft(reminder: reminder)

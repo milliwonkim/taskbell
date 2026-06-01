@@ -22,10 +22,10 @@ final class TodoItem {
     var timelineSortOrder: Double = 0
 
     @Relationship(deleteRule: .cascade, inverse: \Reminder.todo)
-    var reminders: [Reminder] = []
+    var reminders: [Reminder]? = []
 
     @Relationship(deleteRule: .cascade, inverse: \TodoAttachment.todo)
-    var attachments: [TodoAttachment] = []
+    var attachments: [TodoAttachment]? = []
 
     init(
         title: String,
@@ -242,5 +242,57 @@ enum ReminderDeliveryStyle: String, CaseIterable, Identifiable, Codable {
         case .notificationAndVibration:
             "기기 설정에 따라 소리와 진동 사용"
         }
+    }
+}
+
+extension TodoItem {
+    convenience init(cloudImporting legacyTodo: TodoItem) {
+        self.init(
+            title: legacyTodo.title,
+            content: legacyTodo.content,
+            isCompleted: legacyTodo.isCompleted,
+            scheduleMode: legacyTodo.scheduleMode,
+            scheduledStartAt: legacyTodo.scheduledStartAt,
+            scheduledEndAt: legacyTodo.scheduledEndAt,
+            locationLatitude: legacyTodo.locationLatitude,
+            locationLongitude: legacyTodo.locationLongitude,
+            createdAt: legacyTodo.createdAt,
+            timelineSortOrder: legacyTodo.timelineSortOrder
+        )
+
+        attachments = (legacyTodo.attachments ?? []).map {
+            TodoAttachment(cloudImporting: $0, todo: self)
+        }
+        reminders = (legacyTodo.reminders ?? []).map {
+            Reminder(cloudImporting: $0, todo: self)
+        }
+    }
+}
+
+extension TodoAttachment {
+    convenience init(cloudImporting legacyAttachment: TodoAttachment, todo: TodoItem) {
+        self.init(
+            id: legacyAttachment.id,
+            kind: legacyAttachment.kind,
+            contentType: legacyAttachment.contentType,
+            fileName: legacyAttachment.fileName,
+            data: legacyAttachment.data,
+            createdAt: legacyAttachment.createdAt,
+            todo: todo
+        )
+    }
+}
+
+extension Reminder {
+    convenience init(cloudImporting legacyReminder: Reminder, todo: TodoItem) {
+        self.init(
+            id: legacyReminder.id,
+            fireDate: legacyReminder.fireDate,
+            repeatRule: legacyReminder.repeatRule,
+            deliveryStyle: legacyReminder.deliveryStyle,
+            isEnabled: legacyReminder.isEnabled,
+            createdAt: legacyReminder.createdAt,
+            todo: todo
+        )
     }
 }

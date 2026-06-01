@@ -112,7 +112,7 @@ enum NotificationScheduler {
         for todo in todos {
             await scheduleMainDate(for: todo)
 
-            for reminder in todo.reminders {
+            for reminder in todo.reminders ?? [] {
                 await schedule(reminder, todoTitle: todo.title, todoContent: todo.content)
             }
         }
