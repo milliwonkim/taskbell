@@ -14,11 +14,11 @@
 		</data>
 		<key>Assets.car</key>
 		<data>
-		SkDhoNr1lLBhUI4GIamI4NY650I=
+		WJxiIpF+MV2SHZr/BwZIKT0HMEs=
 		</data>
 		<key>Info.plist</key>
 		<data>
-		L96f0aCYkfxwVRdQwfSZCCe9Skg=
+		g75HsQduVpTC4u64vynMEQjld2c=
 		</data>
 		<key>NotificationIcon.png</key>
 		<data>
@@ -28,13 +28,41 @@
 		<data>
 		n57qDP4tZfLD1rCS43W0B4LQjzE=
 		</data>
+		<key>PlugIns/TaskBellWidgetExtension.appex/Info.plist</key>
+		<data>
+		snQkPbhpNVEXwlI/Ls54+BBuVlw=
+		</data>
+		<key>PlugIns/TaskBellWidgetExtension.appex/Metadata.appintents/extract.actionsdata</key>
+		<data>
+		8G5zTQssHIW/rmgFK7CBxaw7z0M=
+		</data>
+		<key>PlugIns/TaskBellWidgetExtension.appex/Metadata.appintents/version.json</key>
+		<data>
+		wAy5/jWLeV2u7MQBpSTlUcWfnVM=
+		</data>
+		<key>PlugIns/TaskBellWidgetExtension.appex/TaskBellWidgetExtension</key>
+		<data>
+		a6/NjrAPKVAXSLz0PVdemSoUB5E=
+		</data>
+		<key>PlugIns/TaskBellWidgetExtension.appex/TaskBellWidgetExtension.debug.dylib</key>
+		<data>
+		E8qJSuXJQ9c8WzkUgmyd+XAApd8=
+		</data>
+		<key>PlugIns/TaskBellWidgetExtension.appex/_CodeSignature/CodeResources</key>
+		<data>
+		TXorMChtvSO4EJ3G9CN+jAWbJhk=
+		</data>
+		<key>PlugIns/TaskBellWidgetExtension.appex/__preview.dylib</key>
+		<data>
+		rNri65/dkIDFeNnxCMRP1xjGMeE=
+		</data>
 		<key>TaskBell.debug.dylib</key>
 		<data>
-		O2yCuVCbqJv2P/zekwcmwECm9s4=
+		0j1BHRbxxl15vk5t8frD5KPj/ww=
 		</data>
 		<key>__preview.dylib</key>
 		<data>
-		B9i62v2ULEhqKlcxuyJDRmI5BTk=
+		TB5gzMA+gWEX+gRP7e7SRP3ygs4=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -57,7 +85,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			ljTeVQAD5nQ0c3vDijmumjvlTXrw/e2zIqVJ25g14iU=
+			ZxtiFK4bWGZKO9p52TNMxP8HKyFPUBUFlaAHdPZEepw=
 			</data>
 		</dict>
 		<key>NotificationIcon.png</key>
@@ -67,18 +95,67 @@
 			wd9C5J16JstSx71+J9f8n1PCMn0zBG989fMfLy/yvTg=
 			</data>
 		</dict>
+		<key>PlugIns/TaskBellWidgetExtension.appex/Info.plist</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			JLEuxfPlI7iNwnK6i112Ee8/iD2bEZGjwEEHuJ++VWM=
+			</data>
+		</dict>
+		<key>PlugIns/TaskBellWidgetExtension.appex/Metadata.appintents/extract.actionsdata</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			aqJXPXKw5rbeBBf9r/jq05FR5CFu7re23hOBdi4Zuh4=
+			</data>
+		</dict>
+		<key>PlugIns/TaskBellWidgetExtension.appex/Metadata.appintents/version.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			bxnT9MM8adQ3wqVvr+cZLV78na6qtETwB21JINXt0IU=
+			</data>
+		</dict>
+		<key>PlugIns/TaskBellWidgetExtension.appex/TaskBellWidgetExtension</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			0e974wsi4Fpo8CyJloeP9bZ4SeLtj/KTQiqnptPiNI0=
+			</data>
+		</dict>
+		<key>PlugIns/TaskBellWidgetExtension.appex/TaskBellWidgetExtension.debug.dylib</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			owQG7bwT+TMO905+gSTMyGoIxX4C4aoW8v8JAqrnuIw=
+			</data>
+		</dict>
+		<key>PlugIns/TaskBellWidgetExtension.appex/_CodeSignature/CodeResources</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			oevbu9mw5WxxNVBggMXHzqlNdBm5jl0abU7Kc4S53ls=
+			</data>
+		</dict>
+		<key>PlugIns/TaskBellWidgetExtension.appex/__preview.dylib</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			lKOaPsK61n5hEmv1GJImNqudBPi5C4GVvM4yH/VnvDc=
+			</data>
+		</dict>
 		<key>TaskBell.debug.dylib</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			HthYbfv7m+EzEkpl01SIbAhuYFfUsWcEasL4kKlY5ek=
+			Re+ntt2q3CmpFsDR/HAMHTPCwnadXylqjSTGiX7V5ao=
 			</data>
 		</dict>
 		<key>__preview.dylib</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			wQrz/5U/7cr/wNA6InL0bYjtyu4FWYLbQqnbP1A3O48=
+			SeUi1ne0UafCOJbrjA/zt9QlDlpynkaBRsChSRJMclA=
 			</data>
 		</dict>
 	</dict>

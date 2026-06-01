@@ -19,6 +19,7 @@ final class TodoItem {
     var locationLatitude: Double?
     var locationLongitude: Double?
     var createdAt: Date = Date()
+    var timelineSortOrder: Double = 0
 
     @Relationship(deleteRule: .cascade, inverse: \Reminder.todo)
     var reminders: [Reminder] = []
@@ -36,6 +37,7 @@ final class TodoItem {
         locationLatitude: Double? = nil,
         locationLongitude: Double? = nil,
         createdAt: Date = .now,
+        timelineSortOrder: Double = 0,
         reminders: [Reminder] = [],
         attachments: [TodoAttachment] = []
     ) {
@@ -48,6 +50,9 @@ final class TodoItem {
         self.locationLatitude = locationLatitude
         self.locationLongitude = locationLongitude
         self.createdAt = createdAt
+        self.timelineSortOrder = timelineSortOrder == 0
+            ? createdAt.timeIntervalSinceReferenceDate
+            : timelineSortOrder
         self.reminders = reminders
         self.attachments = attachments
     }
@@ -203,6 +208,14 @@ enum ReminderDeliveryStyle: String, CaseIterable, Identifiable, Codable {
 
     var id: Self { self }
 
+    var includesVibration: Bool {
+        self == .notificationAndVibration
+    }
+
+    static func style(includesVibration: Bool) -> Self {
+        includesVibration ? .notificationAndVibration : .notificationOnly
+    }
+
     var title: String {
         switch self {
         case .notificationOnly:
@@ -210,6 +223,16 @@ enum ReminderDeliveryStyle: String, CaseIterable, Identifiable, Codable {
         case .notificationAndVibration:
             "푸시 알림 + 진동"
         }
+    }
+
+    func title(repeatRule: ReminderRepeatRule) -> String {
+        var components = [title]
+
+        if repeatRule != .once {
+            components.append("\(repeatRule.title) 반복")
+        }
+
+        return components.joined(separator: " + ")
     }
 
     var subtitle: String {

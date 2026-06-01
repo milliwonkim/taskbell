@@ -29,6 +29,8 @@ struct TodoEditorSheet: View {
     @State private var reminders: [ReminderDraft]
     @State private var isPresentingNewReminderSheet = false
     @State private var selectedReminder: ReminderDraft?
+    @State private var selectedPhotoPreview: PhotoAttachmentPreview?
+    @State private var selectedVideoPreview: VideoAttachmentPreview?
 
     init(
         title: String,
@@ -83,17 +85,7 @@ struct TodoEditorSheet: View {
                 Section("할 일") {
                     TextField("제목", text: $todoTitle)
 
-                    ZStack(alignment: .topLeading) {
-                        if content.isEmpty {
-                            Text("내용")
-                                .foregroundStyle(.tertiary)
-                                .padding(.top, 8)
-                                .padding(.leading, 5)
-                        }
-
-                        TextEditor(text: $content)
-                            .frame(minHeight: 140)
-                    }
+                    RichTodoEditor(content: $content)
 
                     Toggle("완료", isOn: $isCompleted)
                 }
@@ -130,9 +122,9 @@ struct TodoEditorSheet: View {
                     }
                 }
 
-                Section("미리알림") {
+                Section("마감 전 미리알림") {
                     if sortedReminders.isEmpty {
-                        Text("미리알림이 없습니다.")
+                        Text("마감 전 미리알림이 없습니다.")
                             .foregroundStyle(.secondary)
                     } else {
                         ForEach(sortedReminders) { reminder in
@@ -149,7 +141,7 @@ struct TodoEditorSheet: View {
                     Button {
                         isPresentingNewReminderSheet = true
                     } label: {
-                        Label("미리알림 추가", systemImage: "bell.badge")
+                        Label("마감 전 미리알림", systemImage: "bell.badge")
                     }
                 }
 
@@ -160,6 +152,12 @@ struct TodoEditorSheet: View {
                     } else {
                         ForEach(sortedAttachments) { attachment in
                             AttachmentDraftRow(attachment: attachment) {
+                                if let preview = PhotoAttachmentPreview(attachment: attachment) {
+                                    selectedPhotoPreview = preview
+                                } else if let preview = VideoAttachmentPreview(attachment: attachment) {
+                                    selectedVideoPreview = preview
+                                }
+                            } onDelete: {
                                 deleteAttachment(attachment)
                             }
                         }
@@ -233,16 +231,22 @@ struct TodoEditorSheet: View {
                 }
             }
             .sheet(isPresented: $isPresentingNewReminderSheet) {
-                ReminderSheet(title: "미리알림 추가") { draft in
+                ReminderSheet(title: "마감 전 미리알림") { draft in
                     reminders.append(draft)
                 }
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.large])
             }
             .sheet(item: $selectedReminder) { reminder in
                 ReminderSheet(title: "미리알림 편집", initialDraft: reminder) { draft in
                     replaceReminder(draft)
                 }
                 .presentationDetents([.medium, .large])
+            }
+            .sheet(item: $selectedPhotoPreview) { preview in
+                PhotoAttachmentPreviewSheet(preview: preview)
+            }
+            .sheet(item: $selectedVideoPreview) { preview in
+                VideoAttachmentPreviewSheet(preview: preview)
             }
             .sheet(isPresented: $isPresentingLocationPicker) {
                 TodoLocationPickerSheet(initialCoordinate: selectedLocation) {
@@ -317,11 +321,20 @@ struct TodoEditorSheet: View {
 
 private struct AttachmentDraftRow: View {
     let attachment: TodoAttachmentDraft
+    let onPreview: () -> Void
     let onDelete: () -> Void
 
     var body: some View {
         HStack(spacing: 12) {
-            AttachmentThumbnail(attachment: attachment)
+            if attachment.kind == .photo || attachment.kind == .video {
+                Button(action: onPreview) {
+                    AttachmentThumbnail(attachment: attachment)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(attachment.kind == .photo ? "사진 크게 보기" : "동영상 재생")
+            } else {
+                AttachmentThumbnail(attachment: attachment)
+            }
 
             VStack(alignment: .leading, spacing: 3) {
                 Label(attachment.kind.title, systemImage: attachment.kind == .photo ? "photo" : "video")

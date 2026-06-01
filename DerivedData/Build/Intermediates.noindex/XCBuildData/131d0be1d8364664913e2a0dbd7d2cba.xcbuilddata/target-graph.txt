@@ -1,0 +1,4 @@
+Target dependency graph (2 targets)
+Target 'TaskBell' in project 'TaskBell'
+➜ Explicit dependency on target 'TaskBellWidgetExtension' in project 'TaskBell'
+Target 'TaskBellWidgetExtension' in project 'TaskBell' (no dependencies)

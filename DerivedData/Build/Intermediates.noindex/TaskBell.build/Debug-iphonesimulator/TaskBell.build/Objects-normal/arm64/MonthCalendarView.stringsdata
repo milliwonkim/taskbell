@@ -6,24 +6,24 @@
         "comment": "",
         "key": "오늘",
         "location": {
-          "startingColumn": 28,
-          "startingLine": 89
+          "startingColumn": 20,
+          "startingLine": 155
         }
       },
       {
         "comment": "",
         "key": "이전 달",
         "location": {
-          "startingColumn": 45,
-          "startingLine": 105
+          "startingColumn": 37,
+          "startingLine": 173
         }
       },
       {
         "comment": "",
         "key": "다음 달",
         "location": {
-          "startingColumn": 45,
-          "startingLine": 113
+          "startingColumn": 37,
+          "startingLine": 182
         }
       },
       {
@@ -31,7 +31,7 @@
         "key": "+%lld",
         "location": {
           "startingColumn": 22,
-          "startingLine": 306
+          "startingLine": 393
         }
       },
       {
@@ -39,7 +39,7 @@
         "key": "추가 할 일 %lld개",
         "location": {
           "startingColumn": 41,
-          "startingLine": 309
+          "startingLine": 396
         }
       }
     ]

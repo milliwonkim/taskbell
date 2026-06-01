@@ -12,19 +12,39 @@ struct MonthCalendarView: View {
     let onSelectDate: (Date) -> Void
 
     private let calendar = Calendar.current
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
     private let swipeThreshold: CGFloat = 60
 
-    private var monthSummary: String {
-        let monthTodoCount = monthDays.reduce(0) { total, day in
+    private var monthTodoCount: Int {
+        monthDays.reduce(0) { total, day in
             guard day.isCurrentMonth else {
                 return total
             }
 
             return total + todosForDay(day.date).count
         }
+    }
 
+    private var completedMonthTodoCount: Int {
+        monthDays.reduce(0) { total, day in
+            guard day.isCurrentMonth else {
+                return total
+            }
+
+            return total + todosForDay(day.date).filter(\.isCompleted).count
+        }
+    }
+
+    private var monthSummary: String {
         return monthTodoCount == 0 ? "이번 달 할 일 없음" : "이번 달 할 일 \(monthTodoCount)개"
+    }
+
+    private var monthCompletionSummary: String {
+        guard monthTodoCount > 0 else {
+            return "가볍게 시작해볼까요?"
+        }
+
+        return "\(completedMonthTodoCount)개 완료"
     }
 
     private var weekdaySymbols: [String] {
@@ -66,53 +86,18 @@ struct MonthCalendarView: View {
     var body: some View {
         GeometryReader { proxy in
             let rowCount = CGFloat(max(monthDays.count / 7, 1))
-            let dayHeight = max(76, (proxy.size.height - 54) / rowCount)
+            let dayHeight = max(74, (proxy.size.height - 122) / rowCount)
 
-            VStack(spacing: 10) {
-                HStack {
-                    Text(monthSummary)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-
-                    Spacer()
-
-                    Button("오늘") {
-                        withAnimation(.snappy) {
-                            selectedDate = .now
-                            displayedMonth = .now
-                        }
-                    }
-                    .buttonStyle(.bordered)
-                    .disabled(calendar.isDateInToday(selectedDate))
-
-                    HStack(spacing: 8) {
-                        Button {
-                            moveMonth(by: -1)
-                        } label: {
-                            Image(systemName: "chevron.left")
-                                .font(.headline)
-                        }
-                        .accessibilityLabel("이전 달")
-
-                        Button {
-                            moveMonth(by: 1)
-                        } label: {
-                            Image(systemName: "chevron.right")
-                                .font(.headline)
-                        }
-                        .accessibilityLabel("다음 달")
-                    }
-                    .buttonStyle(.borderless)
-                }
-                .padding(.horizontal, 2)
+            VStack(spacing: 14) {
+                calendarHeader
 
                 LazyVGrid(columns: columns, spacing: 0) {
                     ForEach(weekdaySymbols, id: \.self) { weekday in
                         Text(weekday)
                             .font(.caption2.bold())
                             .textCase(.uppercase)
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, minHeight: 24)
+                            .foregroundStyle(.secondary.opacity(0.82))
+                            .frame(maxWidth: .infinity, minHeight: 28)
                     }
 
                     ForEach(monthDays) { day in
@@ -129,17 +114,101 @@ struct MonthCalendarView: View {
                         }
                     }
                 }
-                .overlay(alignment: .top) {
-                    Rectangle()
-                        .fill(Color(.separator))
-                        .frame(height: 0.5)
-                        .padding(.top, 24)
-                }
+                .padding(8)
+                .background(calendarGridBackground)
             }
+            .padding(10)
             .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
             .contentShape(Rectangle())
             .simultaneousGesture(monthSwipeGesture)
         }
+    }
+
+    private var calendarHeader: some View {
+        HStack(spacing: 10) {
+            ZStack {
+                Circle()
+                    .fill(Color.accentColor.opacity(0.14))
+
+                Image(systemName: "calendar")
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(Color.accentColor)
+            }
+            .frame(width: 38, height: 38)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(monthSummary)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.82)
+
+                Text(monthCompletionSummary)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            .layoutPriority(1)
+
+            Spacer()
+
+            Button("오늘") {
+                withAnimation(.snappy) {
+                    selectedDate = .now
+                    displayedMonth = .now
+                }
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+            .disabled(calendar.isDateInToday(selectedDate))
+
+            HStack(spacing: 6) {
+                Button {
+                    moveMonth(by: -1)
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(width: 28, height: 28)
+                }
+                .accessibilityLabel("이전 달")
+
+                Button {
+                    moveMonth(by: 1)
+                } label: {
+                    Image(systemName: "chevron.right")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(width: 28, height: 28)
+                }
+                .accessibilityLabel("다음 달")
+            }
+            .buttonStyle(.borderless)
+        }
+        .padding(12)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.accentColor.opacity(0.16),
+                    Color(.secondarySystemBackground).opacity(0.9),
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            in: RoundedRectangle(cornerRadius: 24, style: .continuous)
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.26), lineWidth: 1)
+        }
+        .shadow(color: Color.accentColor.opacity(0.08), radius: 18, x: 0, y: 8)
+    }
+
+    private var calendarGridBackground: some View {
+        RoundedRectangle(cornerRadius: 26, style: .continuous)
+            .fill(Color(.secondarySystemBackground).opacity(0.72))
+            .overlay {
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .strokeBorder(Color(.separator).opacity(0.16), lineWidth: 1)
+            }
     }
 
     private var monthSwipeGesture: some Gesture {
@@ -197,43 +266,46 @@ private struct CalendarDayButton: View {
     }
 
     var body: some View {
-        Button(action: action) {
-            VStack(spacing: 7) {
-                Text(dayNumber)
-                    .font(.subheadline.weight(isSelected ? .bold : .regular))
-                    .frame(width: 32, height: 32)
-                    .background(selectionBackground)
-                    .foregroundStyle(dayNumberColor)
-                    .clipShape(Circle())
-                    .overlay(todayBorder)
+        VStack(spacing: 7) {
+            Text(dayNumber)
+                .font(.subheadline.weight(isSelected ? .bold : .regular))
+                .frame(width: 34, height: 34)
+                .background(selectionBackground)
+                .foregroundStyle(dayNumberColor)
+                .clipShape(Circle())
+                .overlay(todayBorder)
 
-                if !todos.isEmpty {
-                    CalendarDayActivityView(totalCount: todos.count, completedCount: completedCount, isSelected: isSelected)
-                }
+            if !todos.isEmpty {
+                CalendarDayActivityView(totalCount: todos.count, completedCount: completedCount, isSelected: isSelected)
+            }
 
-                Spacer(minLength: 0)
-            }
-            .padding(.top, 6)
-            .padding(.horizontal, 3)
-            .frame(maxWidth: .infinity, minHeight: minHeight, alignment: .top)
-            .background(dayCellBackground)
-            .overlay(alignment: .bottom) {
-                Rectangle()
-                    .fill(Color(.separator).opacity(0.55))
-                    .frame(height: 0.5)
-            }
-            .contentShape(Rectangle())
+            Spacer(minLength: 0)
         }
-        .buttonStyle(.plain)
+        .padding(.top, 7)
+        .padding(.horizontal, 4)
+        .frame(maxWidth: .infinity, minHeight: minHeight, alignment: .top)
+        .background(dayCellBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .opacity(day.isCurrentMonth ? 1 : 0.48)
+        .contentShape(Rectangle())
+        .onTapGesture(perform: action)
         .accessibilityLabel(accessibilityLabel)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction {
+            action()
+        }
     }
 
     @ViewBuilder
     private var selectionBackground: some View {
         if isSelected {
-            Color.accentColor
+            LinearGradient(
+                colors: [Color.accentColor, Color.accentColor.opacity(0.72)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
         } else if isToday {
-            Color.accentColor.opacity(0.16)
+            Color.accentColor.opacity(0.14)
         } else {
             Color.clear
         }
@@ -251,12 +323,22 @@ private struct CalendarDayButton: View {
         return day.isCurrentMonth ? .primary : .secondary.opacity(0.65)
     }
 
-    private var dayCellBackground: Color {
+    @ViewBuilder
+    private var dayCellBackground: some View {
         if isSelected {
-            return Color.accentColor.opacity(0.08)
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.accentColor.opacity(0.12))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .strokeBorder(Color.accentColor.opacity(0.22), lineWidth: 1)
+                }
+        } else if isToday {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.accentColor.opacity(0.05))
+        } else {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color(.systemBackground).opacity(day.isCurrentMonth ? 0.54 : 0.28))
         }
-
-        return Color.clear
     }
 
     @ViewBuilder
@@ -269,7 +351,7 @@ private struct CalendarDayButton: View {
 
     private var accessibilityLabel: String {
         let dateText = day.date.formatted(date: .long, time: .omitted)
-        return todos.isEmpty ? dateText : "\(dateText), 할 일 \(todos.count)개"
+        return todos.isEmpty ? dateText : "\(dateText), 할 일 \(todos.count)개, 완료 \(completedCount)개"
     }
 }
 
@@ -282,15 +364,30 @@ private struct CalendarDayActivityView: View {
         totalCount - completedCount
     }
 
+    private var completionRatio: CGFloat {
+        guard totalCount > 0 else {
+            return 0
+        }
+
+        return CGFloat(completedCount) / CGFloat(totalCount)
+    }
+
     var body: some View {
         VStack(spacing: 4) {
             HStack(spacing: 3) {
                 ForEach(0..<min(totalCount, 5), id: \.self) { index in
                     Circle()
                         .fill(indicatorColor(for: index))
-                        .frame(width: 5, height: 5)
+                        .frame(width: 5.5, height: 5.5)
                 }
             }
+
+            ProgressView(value: completionRatio)
+                .progressViewStyle(.linear)
+                .tint(isSelected ? Color.accentColor : Color.orange)
+                .frame(width: 28)
+                .scaleEffect(x: 1, y: 0.45, anchor: .center)
+                .accessibilityHidden(true)
 
             if totalCount > 5 {
                 Text("+\(totalCount - 5)")

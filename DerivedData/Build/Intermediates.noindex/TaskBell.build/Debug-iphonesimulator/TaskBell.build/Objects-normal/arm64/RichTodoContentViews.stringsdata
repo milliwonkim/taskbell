@@ -1,0 +1,64 @@
+{
+  "source": "/Users/kimkiwon/Desktop/TaskBell/TaskBell/RichTodoContentViews.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "내용",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 19
+        }
+      },
+      {
+        "comment": "",
+        "key": "미리보기",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 31
+        }
+      },
+      {
+        "comment": "",
+        "key": "...",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 165
+        }
+      },
+      {
+        "comment": "",
+        "key": "체크 해제",
+        "location": {
+          "startingColumn": 49,
+          "startingLine": 198
+        }
+      },
+      {
+        "comment": "",
+        "key": "체크",
+        "location": {
+          "startingColumn": 67,
+          "startingLine": 198
+        }
+      },
+      {
+        "comment": "",
+        "key": "•",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 209
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 327
+        }
+      }
+    ]
+  },
+  "version": 1
+}

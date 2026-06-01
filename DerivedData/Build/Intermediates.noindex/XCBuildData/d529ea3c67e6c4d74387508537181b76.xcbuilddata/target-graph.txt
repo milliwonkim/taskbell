@@ -1,2 +1,0 @@
-Target dependency graph (1 target)
-Target 'TaskBell' in project 'TaskBell' (no dependencies)

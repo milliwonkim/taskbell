@@ -130,8 +130,10 @@ struct ContentView: View {
                     DatedTodoListView(
                         todos: todos,
                         onToggleCompletion: toggleTodoCompletion,
+                        onToggleContentCheckbox: toggleTodoContentCheckbox,
                         onUpdateTodo: updateTodo,
-                        onDelete: deleteTodos
+                        onDelete: deleteTodos,
+                        onMoveTodo: moveTodo
                     )
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
@@ -173,11 +175,13 @@ struct ContentView: View {
                 completedCount: selectedDayCompletedCount,
                 initialDraft: selectedDateDraft,
                 onToggleCompletion: toggleTodoCompletion,
+                onToggleContentCheckbox: toggleTodoContentCheckbox,
                 onUpdateTodo: updateTodo,
                 onDelete: { offsets in
                     deleteTodos(offsets: offsets, from: selectedDayTodos)
                 },
-                onAddTodo: addTodo
+                onAddTodo: addTodo,
+                onMoveTodo: moveTodo
             )
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
@@ -208,6 +212,95 @@ struct ContentView: View {
         refreshWidgetSnapshot()
     }
 
+    private func toggleTodoContentCheckbox(_ todo: TodoItem, lineIndex: Int) {
+        withAnimation {
+            todo.content = RichTodoContentFormatter.toggledCheckbox(
+                in: todo.content,
+                lineIndex: lineIndex
+            )
+        }
+        refreshWidgetSnapshot()
+    }
+
+    private func moveTodo(_ todo: TodoItem, date: Date, before targetTodo: TodoItem?) {
+        var draft = TodoDraft(todo: todo)
+        let calendar = Calendar.current
+        let sourceStart = draft.scheduledStartAt ?? todo.createdAt
+        let targetStart = calendar.date(
+            bySettingHour: calendar.component(.hour, from: sourceStart),
+            minute: calendar.component(.minute, from: sourceStart),
+            second: calendar.component(.second, from: sourceStart),
+            of: date
+        ) ?? date
+
+        if draft.scheduleMode == .none {
+            draft.scheduleMode = .singleDay
+        }
+
+        if draft.scheduleMode == .dateRange, let sourceEnd = draft.scheduledEndAt {
+            let duration = sourceEnd.timeIntervalSince(sourceStart)
+            draft.scheduledEndAt = targetStart.addingTimeInterval(max(duration, 0))
+        }
+
+        draft.scheduledStartAt = targetStart
+        updateTodo(todo, draft: draft)
+        todo.timelineSortOrder = sortOrder(forMoving: todo, to: date, before: targetTodo)
+        refreshWidgetSnapshot()
+    }
+
+    private func sortOrder(
+        for todo: TodoItem,
+        on date: Date,
+        calendar: Calendar
+    ) -> Double {
+        if todo.timelineSortOrder != 0 {
+            return todo.timelineSortOrder
+        }
+
+        return (todo.relevantDate(for: date, calendar: calendar) ?? todo.createdAt)
+            .timeIntervalSinceReferenceDate
+    }
+
+    private func sortOrder(
+        forMoving todo: TodoItem,
+        to date: Date,
+        before targetTodo: TodoItem?
+    ) -> Double {
+        let calendar = Calendar.current
+        let destinationTodos = todos
+            .filter { candidate in
+                candidate.persistentModelID != todo.persistentModelID
+                    && candidate.isScheduled(on: date, calendar: calendar)
+            }
+            .sorted {
+                sortOrder(for: $0, on: date, calendar: calendar)
+                    < sortOrder(for: $1, on: date, calendar: calendar)
+            }
+
+        guard let targetTodo,
+              let targetIndex = destinationTodos.firstIndex(where: {
+                  $0.persistentModelID == targetTodo.persistentModelID
+              })
+        else {
+            let lastOrder = destinationTodos
+                .last
+                .map { sortOrder(for: $0, on: date, calendar: calendar) }
+            return (lastOrder ?? date.timeIntervalSinceReferenceDate) + 1
+        }
+
+        let targetOrder = sortOrder(for: targetTodo, on: date, calendar: calendar)
+        guard targetIndex > 0 else {
+            return targetOrder - 1
+        }
+
+        let previousOrder = sortOrder(
+            for: destinationTodos[targetIndex - 1],
+            on: date,
+            calendar: calendar
+        )
+        return (previousOrder + targetOrder) / 2
+    }
+
     private func addTodo(_ draft: TodoDraft) {
         withAnimation {
             let todo = TodoItem(
@@ -232,17 +325,10 @@ struct ContentView: View {
                 let reminder = Reminder(draft: reminderDraft, todo: todo)
                 modelContext.insert(reminder)
                 todo.reminders.append(reminder)
-
-                Task {
-                    await NotificationScheduler.schedule(
-                        reminder,
-                        todoTitle: todo.title,
-                        todoContent: todo.content
-                    )
-                }
             }
 
             refreshWidgetSnapshot(with: todos + [todo])
+            scheduleNotifications(for: todo)
         }
     }
 
@@ -296,28 +382,14 @@ struct ContentView: View {
         for reminderDraft in draft.reminders {
             if let reminder = existingByID[reminderDraft.id] {
                 reminder.apply(reminderDraft)
-                Task {
-                    await NotificationScheduler.schedule(
-                        reminder,
-                        todoTitle: todo.title,
-                        todoContent: todo.content
-                    )
-                }
             } else {
                 let reminder = Reminder(draft: reminderDraft, todo: todo)
                 modelContext.insert(reminder)
                 todo.reminders.append(reminder)
-
-                Task {
-                    await NotificationScheduler.schedule(
-                        reminder,
-                        todoTitle: todo.title,
-                        todoContent: todo.content
-                    )
-                }
             }
         }
         refreshWidgetSnapshot()
+        scheduleNotifications(for: todo)
     }
 
     private func deleteTodos(offsets: IndexSet, from visibleTodos: [TodoItem]) {
@@ -326,6 +398,10 @@ struct ContentView: View {
         withAnimation {
             for index in offsets {
                 let todo = visibleTodos[index]
+
+                Task {
+                    await NotificationScheduler.cancelMainDate(for: todo)
+                }
 
                 for reminder in todo.reminders {
                     Task {
@@ -344,6 +420,20 @@ struct ContentView: View {
     private func refreshWidgetSnapshot(with snapshotTodos: [TodoItem]? = nil) {
         try? modelContext.save()
         WidgetSnapshotStore.save(todos: snapshotTodos ?? todos)
+    }
+
+    private func scheduleNotifications(for todo: TodoItem) {
+        Task {
+            await NotificationScheduler.scheduleMainDate(for: todo)
+
+            for reminder in todo.reminders {
+                await NotificationScheduler.schedule(
+                    reminder,
+                    todoTitle: todo.title,
+                    todoContent: todo.content
+                )
+            }
+        }
     }
 }
 

@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import SwiftData
 import UserNotifications
 
 enum NotificationScheduler {
@@ -14,6 +15,43 @@ enum NotificationScheduler {
             return try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound])
         } catch {
             return false
+        }
+    }
+
+    static func scheduleMainDate(for todo: TodoItem) async {
+        guard todo.scheduleMode != .none, let scheduledStartAt = todo.scheduledStartAt else {
+            await cancelMainDate(for: todo)
+            return
+        }
+
+        guard scheduledStartAt > .now else {
+            await cancelMainDate(for: todo)
+            return
+        }
+
+        let content = UNMutableNotificationContent()
+        content.title = notificationTitle(from: todo.title)
+        content.body = mainDateNotificationBody(from: todo.content)
+        content.categoryIdentifier = "todo-reminder"
+        content.attachments = notificationIconAttachments()
+        content.sound = .default
+
+        let trigger = UNCalendarNotificationTrigger(
+            dateMatching: Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: scheduledStartAt),
+            repeats: false
+        )
+
+        let request = UNNotificationRequest(
+            identifier: mainDateNotificationIdentifier(for: todo),
+            content: content,
+            trigger: trigger
+        )
+
+        do {
+            await cancelMainDate(for: todo)
+            try await UNUserNotificationCenter.current().add(request)
+        } catch {
+            assertionFailure("Failed to schedule main date notification: \(error)")
         }
     }
 
@@ -63,8 +101,17 @@ enum NotificationScheduler {
         notificationCenter.removeDeliveredNotifications(withIdentifiers: [reminder.notificationIdentifier])
     }
 
+    static func cancelMainDate(for todo: TodoItem) async {
+        let notificationCenter = UNUserNotificationCenter.current()
+        let identifier = mainDateNotificationIdentifier(for: todo)
+        notificationCenter.removePendingNotificationRequests(withIdentifiers: [identifier])
+        notificationCenter.removeDeliveredNotifications(withIdentifiers: [identifier])
+    }
+
     static func rescheduleAll(todos: [TodoItem]) async {
         for todo in todos {
+            await scheduleMainDate(for: todo)
+
             for reminder in todo.reminders {
                 await schedule(reminder, todoTitle: todo.title, todoContent: todo.content)
             }
@@ -84,6 +131,15 @@ enum NotificationScheduler {
         }
 
         return repeatRule == .once ? "미리알림 시간입니다." : "\(repeatRule.title) 반복 미리알림입니다."
+    }
+
+    private static func mainDateNotificationBody(from todoContent: String) -> String {
+        let trimmedContent = todoContent.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmedContent.isEmpty ? "할 일 시간입니다." : trimmedContent
+    }
+
+    private static func mainDateNotificationIdentifier(for todo: TodoItem) -> String {
+        "todo-main-\(String(describing: todo.persistentModelID))"
     }
 
     private static func notificationIconAttachments() -> [UNNotificationAttachment] {

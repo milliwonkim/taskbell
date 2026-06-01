@@ -3,6 +3,7 @@
 //  TaskBell
 //
 
+import Combine
 import CoreLocation
 import MapKit
 import SwiftUI
@@ -61,27 +62,30 @@ struct TodoLocationMapPreview: View {
 
 struct TodoLocationPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var selectedCoordinate: TodoLocationCoordinate
+    @StateObject private var currentLocationProvider = CurrentLocationProvider()
+    @State private var selectedCoordinate: TodoLocationCoordinate?
     @State private var searchText = ""
     @State private var searchResults: [TodoLocationSearchResult] = []
     @State private var isSearching = false
     @State private var didSearch = false
+    private let shouldUseCurrentLocation: Bool
     let onSelect: (TodoLocationCoordinate) -> Void
 
     init(
         initialCoordinate: TodoLocationCoordinate?,
         onSelect: @escaping (TodoLocationCoordinate) -> Void
     ) {
-        _selectedCoordinate = State(
-            initialValue: initialCoordinate
-                ?? TodoLocationCoordinate(latitude: 37.5665, longitude: 126.9780)
-        )
+        self.shouldUseCurrentLocation = initialCoordinate == nil
+        _selectedCoordinate = State(initialValue: initialCoordinate)
         self.onSelect = onSelect
     }
 
     var body: some View {
         NavigationStack {
-            TappableMapView(coordinate: $selectedCoordinate)
+            TappableMapView(
+                coordinate: $selectedCoordinate,
+                shouldTrackUserLocation: shouldUseCurrentLocation
+            )
                 .ignoresSafeArea(edges: .bottom)
                 .navigationTitle("위치 선택")
                 .navigationBarTitleDisplayMode(.inline)
@@ -94,6 +98,20 @@ struct TodoLocationPickerSheet: View {
                     Task {
                         await searchLocations()
                     }
+                }
+                .onAppear {
+                    guard shouldUseCurrentLocation else {
+                        return
+                    }
+
+                    currentLocationProvider.requestCurrentLocation()
+                }
+                .onChange(of: currentLocationProvider.coordinate) { _, coordinate in
+                    guard shouldUseCurrentLocation, let coordinate else {
+                        return
+                    }
+
+                    selectedCoordinate = coordinate
                 }
                 .onChange(of: searchText) { _, newValue in
                     if newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -110,9 +128,14 @@ struct TodoLocationPickerSheet: View {
 
                     ToolbarItem(placement: .confirmationAction) {
                         Button("선택") {
+                            guard let selectedCoordinate else {
+                                return
+                            }
+
                             onSelect(selectedCoordinate)
                             dismiss()
                         }
+                        .disabled(selectedCoordinate == nil)
                     }
                 }
                 .safeAreaInset(edge: .bottom) {
@@ -194,7 +217,9 @@ struct TodoLocationPickerSheet: View {
 
         let request = MKLocalSearch.Request(
             naturalLanguageQuery: trimmedQuery,
-            region: searchRegion(around: selectedCoordinate)
+            region: searchRegion(
+                around: selectedCoordinate ?? currentLocationProvider.coordinate
+            )
         )
         request.resultTypes = [.address, .pointOfInterest]
 
@@ -209,22 +234,76 @@ struct TodoLocationPickerSheet: View {
     }
 
     private func searchRegion(
-        around coordinate: TodoLocationCoordinate
+        around coordinate: TodoLocationCoordinate?
     ) -> MKCoordinateRegion {
         MKCoordinateRegion(
-            center: coordinate.clLocationCoordinate,
+            center: (coordinate ?? defaultSearchCoordinate).clLocationCoordinate,
             span: MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
         )
+    }
+
+    private var defaultSearchCoordinate: TodoLocationCoordinate {
+        TodoLocationCoordinate(latitude: 37.5665, longitude: 126.9780)
+    }
+}
+
+private final class CurrentLocationProvider: NSObject, ObservableObject, CLLocationManagerDelegate {
+    @Published var coordinate: TodoLocationCoordinate?
+
+    private let locationManager = CLLocationManager()
+
+    override init() {
+        super.init()
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+    }
+
+    func requestCurrentLocation() {
+        switch locationManager.authorizationStatus {
+        case .notDetermined:
+            locationManager.requestWhenInUseAuthorization()
+        case .authorizedAlways, .authorizedWhenInUse:
+            locationManager.requestLocation()
+        case .denied, .restricted:
+            break
+        @unknown default:
+            break
+        }
+    }
+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        guard manager.authorizationStatus == .authorizedAlways || manager.authorizationStatus == .authorizedWhenInUse else {
+            return
+        }
+
+        manager.requestLocation()
+    }
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last else {
+            return
+        }
+
+        coordinate = TodoLocationCoordinate(
+            latitude: location.coordinate.latitude,
+            longitude: location.coordinate.longitude
+        )
+    }
+
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        assertionFailure("Failed to fetch current location: \(error)")
     }
 }
 
 private struct TappableMapView: UIViewRepresentable {
-    @Binding var coordinate: TodoLocationCoordinate
+    @Binding var coordinate: TodoLocationCoordinate?
+    let shouldTrackUserLocation: Bool
 
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
         mapView.delegate = context.coordinator
         mapView.pointOfInterestFilter = .includingAll
+        mapView.showsUserLocation = shouldTrackUserLocation
 
         let tapRecognizer = UITapGestureRecognizer(
             target: context.coordinator,
@@ -232,14 +311,24 @@ private struct TappableMapView: UIViewRepresentable {
         )
         mapView.addGestureRecognizer(tapRecognizer)
 
-        mapView.setRegion(region(for: coordinate), animated: false)
-        context.coordinator.refreshAnnotation(on: mapView, coordinate: coordinate)
+        if shouldTrackUserLocation {
+            mapView.setUserTrackingMode(.follow, animated: false)
+        } else if let coordinate {
+            mapView.setRegion(region(for: coordinate), animated: false)
+            context.coordinator.refreshAnnotation(on: mapView, coordinate: coordinate)
+        }
 
         return mapView
     }
 
     func updateUIView(_ mapView: MKMapView, context: Context) {
         context.coordinator.parent = self
+
+        guard let coordinate else {
+            return
+        }
+
+        mapView.setUserTrackingMode(.none, animated: false)
         context.coordinator.refreshAnnotation(on: mapView, coordinate: coordinate)
     }
 
@@ -271,11 +360,15 @@ private struct TappableMapView: UIViewRepresentable {
 
             let point = recognizer.location(in: mapView)
             let coordinate = mapView.convert(point, toCoordinateFrom: mapView)
+            mapView.setUserTrackingMode(.none, animated: true)
             parent.coordinate = TodoLocationCoordinate(
                 latitude: coordinate.latitude,
                 longitude: coordinate.longitude
             )
-            refreshAnnotation(on: mapView, coordinate: parent.coordinate)
+
+            if let selectedCoordinate = parent.coordinate {
+                refreshAnnotation(on: mapView, coordinate: selectedCoordinate)
+            }
         }
 
         func refreshAnnotation(

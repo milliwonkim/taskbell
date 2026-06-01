@@ -1,0 +1,80 @@
+{
+  "source": "/Users/kimkiwon/Desktop/TaskBell/TaskBell/TodoLocationViews.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "%@, %@",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 32
+        }
+      },
+      {
+        "comment": "",
+        "key": "위치",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 55
+        }
+      },
+      {
+        "comment": "",
+        "key": "위치 선택",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 90
+        }
+      },
+      {
+        "comment": "",
+        "key": "장소 또는 주소 검색",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 95
+        }
+      },
+      {
+        "comment": "",
+        "key": "취소",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 124
+        }
+      },
+      {
+        "comment": "",
+        "key": "선택",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 130
+        }
+      },
+      {
+        "comment": "",
+        "key": "지도를 탭하거나 장소를 검색해서 위치를 찍으세요.",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 145
+        }
+      },
+      {
+        "comment": "",
+        "key": "검색 결과가 없습니다.",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 198
+        }
+      },
+      {
+        "comment": "",
+        "key": "검색 중",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 160
+        }
+      }
+    ]
+  },
+  "version": 1
+}

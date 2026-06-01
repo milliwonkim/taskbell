@@ -7,7 +7,7 @@
         "key": "날짜",
         "location": {
           "startingColumn": 25,
-          "startingLine": 85
+          "startingLine": 97
         }
       },
       {
@@ -15,23 +15,15 @@
         "key": "시간",
         "location": {
           "startingColumn": 25,
-          "startingLine": 94
+          "startingLine": 106
         }
       },
       {
         "comment": "",
-        "key": "반복",
+        "key": "알림 조합",
         "location": {
           "startingColumn": 25,
-          "startingLine": 104
-        }
-      },
-      {
-        "comment": "",
-        "key": "알림 방식",
-        "location": {
-          "startingColumn": 25,
-          "startingLine": 112
+          "startingLine": 116
         }
       },
       {
@@ -39,7 +31,7 @@
         "key": "알림 날짜",
         "location": {
           "startingColumn": 25,
-          "startingLine": 87
+          "startingLine": 99
         }
       },
       {
@@ -47,7 +39,23 @@
         "key": "알림 시간",
         "location": {
           "startingColumn": 25,
-          "startingLine": 96
+          "startingLine": 108
+        }
+      },
+      {
+        "comment": "",
+        "key": "푸시 알림",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 117
+        }
+      },
+      {
+        "comment": "",
+        "key": "진동",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 119
         }
       },
       {
@@ -55,23 +63,15 @@
         "key": "반복",
         "location": {
           "startingColumn": 28,
-          "startingLine": 105
+          "startingLine": 122
         }
       },
       {
         "comment": "",
-        "key": "방식",
+        "key": "선택한 조합",
         "location": {
-          "startingColumn": 28,
-          "startingLine": 113
-        }
-      },
-      {
-        "comment": "",
-        "key": "활성화",
-        "location": {
-          "startingColumn": 28,
-          "startingLine": 125
+          "startingColumn": 36,
+          "startingLine": 128
         }
       },
       {
@@ -79,7 +79,7 @@
         "key": "취소",
         "location": {
           "startingColumn": 28,
-          "startingLine": 132
+          "startingLine": 135
         }
       },
       {
@@ -87,7 +87,7 @@
         "key": "저장",
         "location": {
           "startingColumn": 28,
-          "startingLine": 137
+          "startingLine": 140
         }
       }
     ]

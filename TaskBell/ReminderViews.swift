@@ -37,7 +37,7 @@ struct ReminderRowView: View {
 
             HStack(spacing: 6) {
                 Image(systemName: isEnabled ? "bell.fill" : "bell.slash")
-                Text(deliveryStyle.title)
+                Text(deliveryStyle.title(repeatRule: repeatRule))
             }
             .font(.caption)
             .foregroundStyle(isEnabled ? Color.secondary : Color.red)
@@ -54,8 +54,20 @@ struct ReminderSheet: View {
 
     @State private var fireDate: Date
     @State private var repeatRule: ReminderRepeatRule
-    @State private var deliveryStyle: ReminderDeliveryStyle
+    @State private var isVibrationEnabled: Bool
     @State private var isEnabled: Bool
+
+    private var deliveryStyle: ReminderDeliveryStyle {
+        .style(includesVibration: isVibrationEnabled)
+    }
+
+    private var deliverySummary: String {
+        guard isEnabled else {
+            return "알림 꺼짐"
+        }
+
+        return deliveryStyle.title(repeatRule: repeatRule)
+    }
 
     init(
         title: String,
@@ -67,7 +79,7 @@ struct ReminderSheet: View {
         self.onSave = onSave
         _fireDate = State(initialValue: Self.editableFireDate(for: initialDraft))
         _repeatRule = State(initialValue: initialDraft.repeatRule)
-        _deliveryStyle = State(initialValue: initialDraft.deliveryStyle)
+        _isVibrationEnabled = State(initialValue: initialDraft.deliveryStyle.includesVibration)
         _isEnabled = State(initialValue: initialDraft.isEnabled)
     }
 
@@ -101,28 +113,19 @@ struct ReminderSheet: View {
                     .labelsHidden()
                 }
 
-                Section("반복") {
+                Section("알림 조합") {
+                    Toggle("푸시 알림", isOn: $isEnabled)
+
+                    Toggle("진동", isOn: $isVibrationEnabled)
+                        .disabled(!isEnabled)
+
                     Picker("반복", selection: $repeatRule) {
                         ForEach(ReminderRepeatRule.allCases) { repeatRule in
                             Text(repeatRule.title).tag(repeatRule)
                         }
                     }
-                }
 
-                Section("알림 방식") {
-                    Picker("방식", selection: $deliveryStyle) {
-                        ForEach(ReminderDeliveryStyle.allCases) { style in
-                            VStack(alignment: .leading) {
-                                Text(style.title)
-                                Text(style.subtitle)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            .tag(style)
-                        }
-                    }
-
-                    Toggle("활성화", isOn: $isEnabled)
+                    LabeledContent("선택한 조합", value: deliverySummary)
                 }
             }
             .navigationTitle(title)
