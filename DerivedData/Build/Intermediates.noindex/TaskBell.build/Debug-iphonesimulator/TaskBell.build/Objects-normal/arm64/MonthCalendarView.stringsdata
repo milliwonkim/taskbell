@@ -7,7 +7,7 @@
         "key": "오늘",
         "location": {
           "startingColumn": 20,
-          "startingLine": 155
+          "startingLine": 121
         }
       },
       {
@@ -15,7 +15,7 @@
         "key": "이전 달",
         "location": {
           "startingColumn": 37,
-          "startingLine": 173
+          "startingLine": 139
         }
       },
       {
@@ -23,7 +23,7 @@
         "key": "다음 달",
         "location": {
           "startingColumn": 37,
-          "startingLine": 182
+          "startingLine": 148
         }
       },
       {
@@ -31,7 +31,7 @@
         "key": "+%lld",
         "location": {
           "startingColumn": 22,
-          "startingLine": 393
+          "startingLine": 300
         }
       },
       {
@@ -39,7 +39,7 @@
         "key": "추가 할 일 %lld개",
         "location": {
           "startingColumn": 41,
-          "startingLine": 396
+          "startingLine": 303
         }
       }
     ]

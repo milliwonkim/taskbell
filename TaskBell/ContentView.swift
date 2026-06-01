@@ -151,11 +151,6 @@ struct ContentView: View {
                             set: { appAppearance = $0 }
                         )
                     )
-                    .toolbar {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            addTodoToolbarButton
-                        }
-                    }
                 }
             }
 
