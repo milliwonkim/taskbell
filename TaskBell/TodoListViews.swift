@@ -523,11 +523,11 @@ private struct TodoDetailSheet: View {
     }
 
     private var sortedReminders: [Reminder] {
-        todo.reminders.sorted { $0.fireDate < $1.fireDate }
+        (todo.reminders ?? []).sorted { $0.fireDate < $1.fireDate }
     }
 
     private var sortedAttachments: [TodoAttachment] {
-        todo.attachments.sorted { $0.createdAt < $1.createdAt }
+        (todo.attachments ?? []).sorted { $0.createdAt < $1.createdAt }
     }
 
     var body: some View {
@@ -722,15 +722,15 @@ struct TodoRowView: View {
                     .foregroundStyle(.secondary)
             }
 
-            if !todo.reminders.isEmpty {
-                Text("\(todo.reminders.count)개의 미리알림")
+            if let reminders = todo.reminders, !reminders.isEmpty {
+                Text("\(reminders.count)개의 미리알림")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
-            if !todo.attachments.isEmpty {
+            if let attachments = todo.attachments, !attachments.isEmpty {
                 HStack(spacing: 8) {
-                    ForEach(todo.attachments.sorted { $0.createdAt < $1.createdAt }.prefix(3)) { attachment in
+                    ForEach(attachments.sorted { $0.createdAt < $1.createdAt }.prefix(3)) { attachment in
                         let draft = TodoAttachmentDraft(attachment: attachment)
 
                         if attachment.kind == .photo || attachment.kind == .video {
@@ -750,8 +750,8 @@ struct TodoRowView: View {
                         }
                     }
 
-                    if todo.attachments.count > 3 {
-                        Text("+\(todo.attachments.count - 3)")
+                    if attachments.count > 3 {
+                        Text("+\(attachments.count - 3)")
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.secondary)
                             .frame(width: 56, height: 56)

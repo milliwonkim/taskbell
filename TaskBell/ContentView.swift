@@ -313,13 +313,13 @@ struct ContentView: View {
             for attachmentDraft in draft.attachments {
                 let attachment = TodoAttachment(draft: attachmentDraft, todo: todo)
                 modelContext.insert(attachment)
-                todo.attachments.append(attachment)
+                todo.attachments = (todo.attachments ?? []) + [attachment]
             }
 
             for reminderDraft in draft.reminders {
                 let reminder = Reminder(draft: reminderDraft, todo: todo)
                 modelContext.insert(reminder)
-                todo.reminders.append(reminder)
+                todo.reminders = (todo.reminders ?? []) + [reminder]
             }
 
             refreshWidgetSnapshot(with: todos + [todo])
@@ -338,7 +338,7 @@ struct ContentView: View {
         todo.locationLongitude = draft.locationLongitude
 
         let draftAttachmentIDs = Set(draft.attachments.map(\.id))
-        let existingAttachments = todo.attachments
+        let existingAttachments = todo.attachments ?? []
         let existingAttachmentsByID = Dictionary(
             uniqueKeysWithValues: existingAttachments.map { ($0.id, $0) }
         )
@@ -347,7 +347,9 @@ struct ContentView: View {
         where !draftAttachmentIDs.contains(attachment.id) {
             modelContext.delete(attachment)
         }
-        todo.attachments.removeAll { !draftAttachmentIDs.contains($0.id) }
+        todo.attachments = (todo.attachments ?? []).filter {
+            draftAttachmentIDs.contains($0.id)
+        }
 
         for attachmentDraft in draft.attachments {
             if let attachment = existingAttachmentsByID[attachmentDraft.id] {
@@ -355,12 +357,12 @@ struct ContentView: View {
             } else {
                 let attachment = TodoAttachment(draft: attachmentDraft, todo: todo)
                 modelContext.insert(attachment)
-                todo.attachments.append(attachment)
+                todo.attachments = (todo.attachments ?? []) + [attachment]
             }
         }
 
         let draftIDs = Set(draft.reminders.map(\.id))
-        let existingReminders = todo.reminders
+        let existingReminders = todo.reminders ?? []
         let existingByID = Dictionary(
             uniqueKeysWithValues: existingReminders.map { ($0.id, $0) }
         )
@@ -372,7 +374,9 @@ struct ContentView: View {
             }
             modelContext.delete(reminder)
         }
-        todo.reminders.removeAll { !draftIDs.contains($0.id) }
+        todo.reminders = (todo.reminders ?? []).filter {
+            draftIDs.contains($0.id)
+        }
 
         for reminderDraft in draft.reminders {
             if let reminder = existingByID[reminderDraft.id] {
@@ -380,7 +384,7 @@ struct ContentView: View {
             } else {
                 let reminder = Reminder(draft: reminderDraft, todo: todo)
                 modelContext.insert(reminder)
-                todo.reminders.append(reminder)
+                todo.reminders = (todo.reminders ?? []) + [reminder]
             }
         }
         refreshWidgetSnapshot()
@@ -398,7 +402,7 @@ struct ContentView: View {
                     await NotificationScheduler.cancelMainDate(for: todo)
                 }
 
-                for reminder in todo.reminders {
+                for reminder in todo.reminders ?? [] {
                     Task {
                         await NotificationScheduler.cancel(reminder)
                     }
@@ -421,7 +425,7 @@ struct ContentView: View {
         Task {
             await NotificationScheduler.scheduleMainDate(for: todo)
 
-            for reminder in todo.reminders {
+            for reminder in todo.reminders ?? [] {
                 await NotificationScheduler.schedule(
                     reminder,
                     todoTitle: todo.title,
