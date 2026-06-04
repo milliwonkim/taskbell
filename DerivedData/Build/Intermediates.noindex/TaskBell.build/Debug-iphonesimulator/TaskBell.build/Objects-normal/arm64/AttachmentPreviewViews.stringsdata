@@ -1,24 +1,5 @@
 {
   "source": "/Users/kimkiwon/Desktop/TaskBell/TaskBell/AttachmentPreviewViews.swift",
-  "tables": {
-    "Localizable": [
-      {
-        "comment": "",
-        "key": "닫기",
-        "location": {
-          "startingColumn": 28,
-          "startingLine": 43
-        }
-      },
-      {
-        "comment": "",
-        "key": "닫기",
-        "location": {
-          "startingColumn": 28,
-          "startingLine": 110
-        }
-      }
-    ]
-  },
+  "tables": {},
   "version": 1
 }

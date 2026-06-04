@@ -10,6 +10,8 @@ enum WidgetSnapshotStore {
     static let appGroupIdentifier = "group.kiwonkim.TaskBell"
 
     private static let fileName = "taskbell-weekly-widget.json"
+    private static let widgetKind = "TaskBellWidget"
+    private static var pendingReloadTask: Task<Void, Never>?
 
     static func save(
         todos: [TodoItem],
@@ -33,9 +35,22 @@ enum WidgetSnapshotStore {
         do {
             let data = try JSONEncoder().encode(snapshot)
             try data.write(to: url, options: [.atomic])
-            WidgetCenter.shared.reloadAllTimelines()
+            scheduleTimelineReload()
         } catch {
             assertionFailure("Failed to save widget snapshot: \(error)")
+        }
+    }
+
+    /// Coalesces rapid snapshot writes into a single widget reload request.
+    private static func scheduleTimelineReload() {
+        pendingReloadTask?.cancel()
+        pendingReloadTask = Task {
+            do {
+                try await Task.sleep(for: .milliseconds(300))
+            } catch {
+                return
+            }
+            WidgetCenter.shared.reloadTimelines(ofKind: widgetKind)
         }
     }
 

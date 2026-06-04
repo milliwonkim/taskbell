@@ -16,6 +16,16 @@
     "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps",
     "swiftmodule" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/GeneratedAssetSymbols~partial.swiftmodule"
   },
+  "/Users/kimkiwon/Desktop/TaskBell/TaskBell/AnniversaryViews.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AnniversaryViews.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AnniversaryViews.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AnniversaryViews.dia",
+    "index-unit-output-path" : "/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AnniversaryViews.o",
+    "llvm-bc" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AnniversaryViews.bc",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AnniversaryViews.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AnniversaryViews.swiftdeps",
+    "swiftmodule" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AnniversaryViews~partial.swiftmodule"
+  },
   "/Users/kimkiwon/Desktop/TaskBell/TaskBell/AppTypes.swift" : {
     "const-values" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AppTypes.swiftconstvalues",
     "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AppTypes.d",
@@ -85,6 +95,16 @@
     "object" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/NotificationScheduler.o",
     "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/NotificationScheduler.swiftdeps",
     "swiftmodule" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/NotificationScheduler~partial.swiftmodule"
+  },
+  "/Users/kimkiwon/Desktop/TaskBell/TaskBell/PriorityTodoListView.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/PriorityTodoListView.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/PriorityTodoListView.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/PriorityTodoListView.dia",
+    "index-unit-output-path" : "/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/PriorityTodoListView.o",
+    "llvm-bc" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/PriorityTodoListView.bc",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/PriorityTodoListView.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/PriorityTodoListView.swiftdeps",
+    "swiftmodule" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/PriorityTodoListView~partial.swiftmodule"
   },
   "/Users/kimkiwon/Desktop/TaskBell/TaskBell/Reminder+Draft.swift" : {
     "const-values" : "/Users/kimkiwon/Desktop/TaskBell/DerivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/Reminder+Draft.swiftconstvalues",

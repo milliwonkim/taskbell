@@ -1,16 +1,5 @@
 {
   "source": "/Users/kimkiwon/Desktop/TaskBell/TaskBell/LiquidGlassAddButton.swift",
-  "tables": {
-    "Localizable": [
-      {
-        "comment": "",
-        "key": "할 일 추가",
-        "location": {
-          "startingColumn": 29,
-          "startingLine": 21
-        }
-      }
-    ]
-  },
+  "tables": {},
   "version": 1
 }
