@@ -6,6 +6,7 @@
 import SwiftUI
 
 struct ReminderRowView: View {
+    @Environment(\.appLanguage) private var appLanguage
     let fireDate: Date
     let repeatRule: ReminderRepeatRule
     let deliveryStyle: ReminderDeliveryStyle
@@ -30,14 +31,14 @@ struct ReminderRowView: View {
             HStack {
                 Text(fireDate, format: Date.FormatStyle(date: .abbreviated, time: .shortened))
                 Spacer()
-                Text(repeatRule.title)
+                Text(repeatRule.title(in: appLanguage))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
             HStack(spacing: 6) {
                 Image(systemName: isEnabled ? "bell.fill" : "bell.slash")
-                Text(deliveryStyle.title(repeatRule: repeatRule))
+                Text(deliveryStyle.title(repeatRule: repeatRule, language: appLanguage))
             }
             .font(.caption)
             .foregroundStyle(isEnabled ? Color.secondary : Color.red)
@@ -48,6 +49,7 @@ struct ReminderRowView: View {
 
 struct ReminderSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.appLanguage) private var appLanguage
     let title: String
     let reminderID: UUID
     let onSave: (ReminderDraft) -> Void
@@ -63,10 +65,10 @@ struct ReminderSheet: View {
 
     private var deliverySummary: String {
         guard isEnabled else {
-            return "알림 꺼짐"
+            return appLanguage.text(korean: "알림 꺼짐", english: "Notifications Off")
         }
 
-        return deliveryStyle.title(repeatRule: repeatRule)
+        return deliveryStyle.title(repeatRule: repeatRule, language: appLanguage)
     }
 
     init(
@@ -94,18 +96,18 @@ struct ReminderSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("날짜") {
+                Section(appLanguage.text(korean: "날짜", english: "Date")) {
                     DatePicker(
-                        "알림 날짜",
+                        appLanguage.text(korean: "알림 날짜", english: "Reminder Date"),
                         selection: $fireDate,
                         displayedComponents: .date
                     )
                     .datePickerStyle(.graphical)
                 }
 
-                Section("시간") {
+                Section(appLanguage.text(korean: "시간", english: "Time")) {
                     DatePicker(
-                        "알림 시간",
+                        appLanguage.text(korean: "알림 시간", english: "Reminder Time"),
                         selection: $fireDate,
                         displayedComponents: .hourAndMinute
                     )
@@ -113,31 +115,31 @@ struct ReminderSheet: View {
                     .labelsHidden()
                 }
 
-                Section("알림 조합") {
-                    Toggle("푸시 알림", isOn: $isEnabled)
+                Section(appLanguage.text(korean: "알림 조합", english: "Notification Options")) {
+                    Toggle(appLanguage.text(korean: "푸시 알림", english: "Push Notification"), isOn: $isEnabled)
 
-                    Toggle("진동", isOn: $isVibrationEnabled)
+                    Toggle(appLanguage.text(korean: "진동", english: "Vibration"), isOn: $isVibrationEnabled)
                         .disabled(!isEnabled)
 
-                    Picker("반복", selection: $repeatRule) {
+                    Picker(appLanguage.text(korean: "반복", english: "Repeat"), selection: $repeatRule) {
                         ForEach(ReminderRepeatRule.allCases) { repeatRule in
-                            Text(repeatRule.title).tag(repeatRule)
+                            Text(repeatRule.title(in: appLanguage)).tag(repeatRule)
                         }
                     }
 
-                    LabeledContent("선택한 조합", value: deliverySummary)
+                    LabeledContent(appLanguage.text(korean: "선택한 조합", english: "Selected Options"), value: deliverySummary)
                 }
             }
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("취소") {
+                    Button(appLanguage.text(korean: "취소", english: "Cancel")) {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("저장") {
+                    Button(appLanguage.text(korean: "저장", english: "Save")) {
                         onSave(
                             ReminderDraft(
                                 id: reminderID,

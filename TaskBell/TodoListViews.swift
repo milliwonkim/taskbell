@@ -7,7 +7,16 @@ import SwiftData
 import SwiftUI
 import UniformTypeIdentifiers
 
+enum TodoRowMetrics {
+    static let checkboxContentSpacing: CGFloat = 10
+    static let contentSpacing: CGFloat = 6
+    static let metadataRowSpacing: CGFloat = 8
+    static let metadataColumnSpacing: CGFloat = 12
+    static let checkboxSize: CGFloat = 32
+}
+
 struct DatedTodoListView: View {
+    @Environment(\.appLanguage) private var appLanguage
     let todos: [TodoItem]
     let onToggleCompletion: (TodoItem) -> Void
     let onToggleContentCheckbox: (TodoItem, Int) -> Void
@@ -60,9 +69,9 @@ struct DatedTodoListView: View {
         Group {
             if !hasScheduledTodos {
                 ContentUnavailableView(
-                    "날짜가 지정된 할 일이 없습니다",
+                    appLanguage.text(korean: "날짜가 지정된 할 일이 없습니다", english: "No Scheduled Todos"),
                     systemImage: "calendar.badge.exclamationmark",
-                    description: Text("오른쪽 아래 + 버튼으로 날짜가 있는 할 일을 추가하세요.")
+                    description: Text(appLanguage.text(korean: "오른쪽 아래 + 버튼으로 날짜가 있는 할 일을 추가하세요.", english: "Use the + button at the bottom right to add a todo with a date."))
                 )
             } else {
                 List {
@@ -90,7 +99,7 @@ struct DatedTodoListView: View {
         }
         .sheet(item: $editingTodo) { todo in
             TodoEditorSheet(
-                title: "할 일 수정",
+                title: appLanguage.text(korean: "할 일 수정", english: "Edit Todo"),
                 initialDraft: TodoDraft(todo: todo)
             ) { draft in
                 onUpdateTodo(todo, draft)
@@ -100,19 +109,7 @@ struct DatedTodoListView: View {
     }
 
     private func sectionTitle(for date: Date) -> String {
-        if calendar.isDateInToday(date) {
-            return "오늘"
-        }
-
-        if calendar.isDateInTomorrow(date) {
-            return "내일"
-        }
-
-        if calendar.isDateInYesterday(date) {
-            return "어제"
-        }
-
-        return date.formatted(date: .complete, time: .omitted)
+        appLanguage.formattedListDayTitle(for: date, calendar: calendar)
     }
 
     private func todoSection(_ section: DatedTodoSection) -> some View {
@@ -131,8 +128,11 @@ struct DatedTodoListView: View {
         }
     }
 
-    private func timelineRow(_ todo: TodoItem, in section: DatedTodoSection) -> some View {
-        HStack(spacing: 12) {
+    private func timelineRow(_ todo: TodoItem, in section: DatedTodoSection)
+        -> some View
+    {
+        HStack(alignment: .top, spacing: TodoRowMetrics.checkboxContentSpacing)
+        {
             TodoCompletionButton(
                 isCompleted: todo.isCompleted,
                 action: {
@@ -158,13 +158,13 @@ struct DatedTodoListView: View {
             Button {
                 editingTodo = todo
             } label: {
-                Label("수정", systemImage: "pencil")
+                Label(appLanguage.text(korean: "수정", english: "Edit"), systemImage: "pencil")
             }
 
             Button(role: .destructive) {
                 delete(todo, from: section.todos)
             } label: {
-                Label("삭제", systemImage: "trash")
+                Label(appLanguage.text(korean: "삭제", english: "Delete"), systemImage: "trash")
             }
         }
         .onDrag {
@@ -184,9 +184,11 @@ struct DatedTodoListView: View {
     }
 
     private func delete(_ todo: TodoItem, from visibleTodos: [TodoItem]) {
-        guard let index = visibleTodos.firstIndex(where: {
-            $0.persistentModelID == todo.persistentModelID
-        }) else {
+        guard
+            let index = visibleTodos.firstIndex(where: {
+                $0.persistentModelID == todo.persistentModelID
+            })
+        else {
             return
         }
 
@@ -202,7 +204,8 @@ struct DatedTodoListView: View {
             return todo.timelineSortOrder
         }
 
-        return (todo.relevantDate(for: date, calendar: calendar) ?? todo.createdAt)
+        return
+            (todo.relevantDate(for: date, calendar: calendar) ?? todo.createdAt)
             .timeIntervalSinceReferenceDate
     }
 
@@ -211,13 +214,20 @@ struct DatedTodoListView: View {
         to date: Date,
         before targetTodo: TodoItem? = nil
     ) -> Bool {
-        guard let provider = providers.first(where: {
-            $0.hasItemConformingToTypeIdentifier(UTType.plainText.identifier)
-        }) else {
+        guard
+            let provider = providers.first(where: {
+                $0.hasItemConformingToTypeIdentifier(
+                    UTType.plainText.identifier
+                )
+            })
+        else {
             return false
         }
 
-        provider.loadItem(forTypeIdentifier: UTType.plainText.identifier, options: nil) { item, _ in
+        provider.loadItem(
+            forTypeIdentifier: UTType.plainText.identifier,
+            options: nil
+        ) { item, _ in
             let draggedID: String?
             if let data = item as? Data {
                 draggedID = String(data: data, encoding: .utf8)
@@ -230,12 +240,17 @@ struct DatedTodoListView: View {
             }
 
             Task { @MainActor in
-                guard let todo = todos.first(where: { dragIdentifier(for: $0) == draggedID }) else {
+                guard
+                    let todo = todos.first(where: {
+                        dragIdentifier(for: $0) == draggedID
+                    })
+                else {
                     return
                 }
 
                 if let targetTodo,
-                   targetTodo.persistentModelID == todo.persistentModelID {
+                    targetTodo.persistentModelID == todo.persistentModelID
+                {
                     targetedDropDate = nil
                     return
                 }
@@ -281,9 +296,11 @@ private struct DatedTodoSectionHeader: View {
 }
 
 struct SelectedDayTodoSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.appLanguage) private var appLanguage
+
     let selectedDate: Date
     let todos: [TodoItem]
-    let completedCount: Int
     let initialDraft: TodoDraft
     let onToggleCompletion: (TodoItem) -> Void
     let onToggleContentCheckbox: (TodoItem, Int) -> Void
@@ -297,50 +314,42 @@ struct SelectedDayTodoSheet: View {
     @State private var editingTodo: TodoItem?
 
     private var title: String {
-        selectedDate.formatted(
-            Date.FormatStyle(date: .complete, time: .omitted)
-        )
-    }
-
-    private var summary: String {
-        todos.isEmpty ? "할 일 없음" : "\(completedCount)/\(todos.count) 완료"
+        appLanguage.formattedLongDate(selectedDate)
     }
 
     var body: some View {
         NavigationStack {
             Group {
                 if todos.isEmpty {
-                    ContentUnavailableView(
-                        "이 날짜의 할 일이 없습니다",
-                        systemImage: "calendar.badge.checkmark",
-                        description: Text("오른쪽 아래 + 버튼으로 이 날짜에 할 일을 추가하세요.")
-                    )
+                    emptyState
                 } else {
                     todoList
                 }
-            }
-            .safeAreaInset(edge: .bottom) {
-                Color.clear.frame(height: 72)
-            }
-            .overlay(alignment: .bottomTrailing) {
-                addTodoFloatingButton
-                    .padding(.trailing, 24)
-                    .padding(.bottom, 24)
             }
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Text(summary)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    Button(appLanguage.text(korean: "닫기", english: "Close")) {
+                        dismiss()
+                    }
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    EditButton()
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button {
+                        isPresentingNewTodoSheet = true
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title3)
+                    }
+                    .accessibilityLabel(appLanguage.text(korean: "이 날짜에 할 일 추가", english: "Add Todo on This Date"))
+
+                    if !todos.isEmpty {
+                        EditButton()
+                    }
                 }
             }
             .sheet(isPresented: $isPresentingNewTodoSheet) {
-                TodoEditorSheet(title: "새 할 일", initialDraft: initialDraft) {
+                TodoEditorSheet(title: appLanguage.text(korean: "새 할 일", english: "New Todo"), initialDraft: initialDraft) {
                     draft in
                     onAddTodo(draft)
                 }
@@ -363,7 +372,7 @@ struct SelectedDayTodoSheet: View {
             }
             .sheet(item: $editingTodo) { todo in
                 TodoEditorSheet(
-                    title: "할 일 수정",
+                    title: appLanguage.text(korean: "할 일 수정", english: "Edit Todo"),
                     initialDraft: TodoDraft(todo: todo)
                 ) { draft in
                     onUpdateTodo(todo, draft)
@@ -371,18 +380,31 @@ struct SelectedDayTodoSheet: View {
                 .presentationDetents([.large])
             }
         }
+        .environment(\.locale, appLanguage.locale)
     }
 
-    private var addTodoFloatingButton: some View {
-        LiquidGlassAddButton {
-            isPresentingNewTodoSheet = true
+    private var emptyState: some View {
+        ContentUnavailableView {
+            Label(appLanguage.text(korean: "이 날짜의 할 일이 없습니다", english: "No Todos on This Date"), systemImage: "calendar.badge.plus")
+        } description: {
+            Text(appLanguage.text(korean: "오른쪽 위 + 버튼으로 이 날짜에 할 일을 추가하세요.", english: "Use the + button at the top right to add a todo on this date."))
+        } actions: {
+            Button {
+                isPresentingNewTodoSheet = true
+            } label: {
+                Label(appLanguage.text(korean: "할 일 추가", english: "Add Todo"), systemImage: "plus")
+            }
+            .buttonStyle(.borderedProminent)
         }
     }
 
     private var todoList: some View {
         List {
             ForEach(todos) { todo in
-                HStack(spacing: 12) {
+                HStack(
+                    alignment: .top,
+                    spacing: TodoRowMetrics.checkboxContentSpacing
+                ) {
                     TodoCompletionButton(
                         isCompleted: todo.isCompleted,
                         action: {
@@ -405,7 +427,9 @@ struct SelectedDayTodoSheet: View {
                     selectedTodo = todo
                 }
                 .onDrag {
-                    NSItemProvider(object: dragIdentifier(for: todo) as NSString)
+                    NSItemProvider(
+                        object: dragIdentifier(for: todo) as NSString
+                    )
                 }
                 .onDrop(of: [.plainText], isTargeted: nil) { providers in
                     moveDraggedTodo(from: providers, before: todo)
@@ -414,13 +438,13 @@ struct SelectedDayTodoSheet: View {
                     Button {
                         editingTodo = todo
                     } label: {
-                        Label("수정", systemImage: "pencil")
+                        Label(appLanguage.text(korean: "수정", english: "Edit"), systemImage: "pencil")
                     }
 
                     Button(role: .destructive) {
                         delete(todo)
                     } label: {
-                        Label("삭제", systemImage: "trash")
+                        Label(appLanguage.text(korean: "삭제", english: "Delete"), systemImage: "trash")
                     }
                 }
             }
@@ -429,13 +453,16 @@ struct SelectedDayTodoSheet: View {
         .onDrop(of: [.plainText], isTargeted: nil) { providers in
             moveDraggedTodo(from: providers, before: nil)
         }
-        .listStyle(.insetGrouped)
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
     }
 
     private func delete(_ todo: TodoItem) {
-        guard let index = todos.firstIndex(where: {
-            $0.persistentModelID == todo.persistentModelID
-        }) else {
+        guard
+            let index = todos.firstIndex(where: {
+                $0.persistentModelID == todo.persistentModelID
+            })
+        else {
             return
         }
 
@@ -450,13 +477,20 @@ struct SelectedDayTodoSheet: View {
         from providers: [NSItemProvider],
         before targetTodo: TodoItem?
     ) -> Bool {
-        guard let provider = providers.first(where: {
-            $0.hasItemConformingToTypeIdentifier(UTType.plainText.identifier)
-        }) else {
+        guard
+            let provider = providers.first(where: {
+                $0.hasItemConformingToTypeIdentifier(
+                    UTType.plainText.identifier
+                )
+            })
+        else {
             return false
         }
 
-        provider.loadItem(forTypeIdentifier: UTType.plainText.identifier, options: nil) { item, _ in
+        provider.loadItem(
+            forTypeIdentifier: UTType.plainText.identifier,
+            options: nil
+        ) { item, _ in
             let draggedID: String?
             if let data = item as? Data {
                 draggedID = String(data: data, encoding: .utf8)
@@ -469,12 +503,17 @@ struct SelectedDayTodoSheet: View {
             }
 
             Task { @MainActor in
-                guard let todo = todos.first(where: { dragIdentifier(for: $0) == draggedID }) else {
+                guard
+                    let todo = todos.first(where: {
+                        dragIdentifier(for: $0) == draggedID
+                    })
+                else {
                     return
                 }
 
                 if let targetTodo,
-                   targetTodo.persistentModelID == todo.persistentModelID {
+                    targetTodo.persistentModelID == todo.persistentModelID
+                {
                     return
                 }
 
@@ -486,7 +525,8 @@ struct SelectedDayTodoSheet: View {
     }
 }
 
-private struct TodoCompletionButton: View {
+struct TodoCompletionButton: View {
+    @Environment(\.appLanguage) private var appLanguage
     let isCompleted: Bool
     let action: () -> Void
 
@@ -495,16 +535,20 @@ private struct TodoCompletionButton: View {
             Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
                 .font(.title2)
                 .foregroundStyle(isCompleted ? .green : .secondary)
-                .frame(width: 44, height: 44)
+                .frame(
+                    width: TodoRowMetrics.checkboxSize,
+                    height: TodoRowMetrics.checkboxSize
+                )
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(isCompleted ? "완료 해제" : "완료")
+        .accessibilityLabel(isCompleted ? appLanguage.text(korean: "완료 해제", english: "Mark Incomplete") : appLanguage.text(korean: "완료", english: "Complete"))
     }
 }
 
-private struct TodoDetailSheet: View {
+struct TodoDetailSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.appLanguage) private var appLanguage
     let todo: TodoItem
     let onToggleCompletion: () -> Void
     let onToggleContentCheckbox: (Int) -> Void
@@ -515,7 +559,7 @@ private struct TodoDetailSheet: View {
     @State private var selectedVideoPreview: VideoAttachmentPreview?
 
     private var displayTitle: String {
-        todo.title.isEmpty ? "제목 없음" : todo.title
+        todo.title.isEmpty ? appLanguage.text(korean: "제목 없음", english: "Untitled") : todo.title
     }
 
     private var trimmedContent: String {
@@ -537,28 +581,39 @@ private struct TodoDetailSheet: View {
                     headerCard
 
                     if !trimmedContent.isEmpty {
-                        detailCard(title: "내용", systemImage: "text.alignleft") {
-                            RichTodoContentView(content: todo.content, compact: false) { lineIndex in
+                        detailCard(title: appLanguage.text(korean: "내용", english: "Content"), systemImage: "text.alignleft") {
+                            RichTodoContentView(
+                                content: todo.content,
+                                compact: false
+                            ) { lineIndex in
                                 onToggleContentCheckbox(lineIndex)
                             }
                         }
                     }
 
                     if !sortedReminders.isEmpty {
-                        detailCard(title: "미리알림", systemImage: "bell.badge") {
+                        detailCard(title: appLanguage.text(korean: "미리알림", english: "Reminders"), systemImage: "bell.badge") {
                             VStack(spacing: 10) {
                                 ForEach(sortedReminders) { reminder in
                                     ReminderRowView(reminder: reminder)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .frame(
+                                            maxWidth: .infinity,
+                                            alignment: .leading
+                                        )
                                 }
                             }
                         }
                     }
 
                     if !sortedAttachments.isEmpty {
-                        detailCard(title: "첨부", systemImage: "paperclip") {
+                        detailCard(title: appLanguage.text(korean: "첨부", english: "Attachments"), systemImage: "paperclip") {
                             LazyVGrid(
-                                columns: [GridItem(.adaptive(minimum: 72), spacing: 10)],
+                                columns: [
+                                    GridItem(
+                                        .adaptive(minimum: 72),
+                                        spacing: 10
+                                    )
+                                ],
                                 alignment: .leading,
                                 spacing: 10
                             ) {
@@ -570,7 +625,10 @@ private struct TodoDetailSheet: View {
                     }
 
                     if let locationText {
-                        detailCard(title: "위치", systemImage: "mappin.and.ellipse") {
+                        detailCard(
+                            title: appLanguage.text(korean: "위치", english: "Location"),
+                            systemImage: "mappin.and.ellipse"
+                        ) {
                             Text(locationText)
                                 .font(.body)
                                 .foregroundStyle(.secondary)
@@ -580,22 +638,25 @@ private struct TodoDetailSheet: View {
                 .padding(20)
             }
             .background(Color(.systemGroupedBackground))
-            .navigationTitle("할 일")
+            .navigationTitle(appLanguage.text(korean: "할 일", english: "Todo"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("닫기") {
+                    Button(appLanguage.text(korean: "닫기", english: "Close")) {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("편집") {
+                    Button(appLanguage.text(korean: "편집", english: "Edit")) {
                         isPresentingEditor = true
                     }
                 }
             }
             .sheet(isPresented: $isPresentingEditor) {
-                TodoEditorSheet(title: "할 일 수정", initialDraft: TodoDraft(todo: todo)) { draft in
+                TodoEditorSheet(
+                    title: appLanguage.text(korean: "할 일 수정", english: "Edit Todo"),
+                    initialDraft: TodoDraft(todo: todo)
+                ) { draft in
                     onUpdateTodo(draft)
                 }
                 .presentationDetents([.large])
@@ -613,37 +674,50 @@ private struct TodoDetailSheet: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top, spacing: 12) {
                 Button(action: onToggleCompletion) {
-                    Image(systemName: todo.isCompleted ? "checkmark.circle.fill" : "circle")
-                        .font(.system(size: 44))
-                        .foregroundStyle(todo.isCompleted ? .green : .secondary)
-                        .frame(width: 56, height: 56)
-                        .contentShape(Circle())
+                    Image(
+                        systemName: todo.isCompleted
+                            ? "checkmark.circle.fill" : "circle"
+                    )
+                    .font(.system(size: 44))
+                    .foregroundStyle(todo.isCompleted ? .green : .secondary)
+                    .frame(width: 56, height: 56)
+                    .contentShape(Circle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(todo.isCompleted ? "완료 해제" : "완료")
+                .accessibilityLabel(todo.isCompleted ? appLanguage.text(korean: "완료 해제", english: "Mark Incomplete") : appLanguage.text(korean: "완료", english: "Complete"))
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text(displayTitle)
                         .font(.title2.weight(.bold))
-                        .foregroundStyle(todo.isCompleted ? .secondary : .primary)
+                        .foregroundStyle(
+                            todo.isCompleted ? .secondary : .primary
+                        )
                         .strikethrough(todo.isCompleted)
 
-                    Text(todo.isCompleted ? "완료됨" : "진행 중")
+                    Text(todo.isCompleted ? appLanguage.text(korean: "완료됨", english: "Completed") : appLanguage.text(korean: "진행 중", english: "In Progress"))
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(todo.isCompleted ? .green : .orange)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
-                        .background((todo.isCompleted ? Color.green : Color.orange).opacity(0.12), in: Capsule())
+                        .background(
+                            (todo.isCompleted ? Color.green : Color.orange)
+                                .opacity(0.12),
+                            in: Capsule()
+                        )
                 }
 
                 Spacer()
             }
 
-            if let scheduleText = todo.scheduleSummary {
+            if let scheduleText = todo.scheduleSummary(in: appLanguage) {
                 Label(scheduleText, systemImage: "calendar")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
+
+            Label(todo.priority.title, systemImage: todo.priority.systemImage)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -652,12 +726,13 @@ private struct TodoDetailSheet: View {
 
     private var locationText: String? {
         guard let latitude = todo.locationLatitude,
-              let longitude = todo.locationLongitude
+            let longitude = todo.locationLongitude
         else {
             return nil
         }
 
-        return "\(latitude.formatted(.number.precision(.fractionLength(5)))), \(longitude.formatted(.number.precision(.fractionLength(5))))"
+        return
+            "\(latitude.formatted(.number.precision(.fractionLength(5)))), \(longitude.formatted(.number.precision(.fractionLength(5))))"
     }
 
     private func detailCard<Content: View>(
@@ -691,11 +766,12 @@ private struct TodoDetailSheet: View {
                 .frame(width: 72, height: 72)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(attachment.kind == .photo ? "사진 크게 보기" : "동영상 재생")
+        .accessibilityLabel(attachment.kind == .photo ? appLanguage.text(korean: "사진 크게 보기", english: "View Photo") : appLanguage.text(korean: "동영상 재생", english: "Play Video"))
     }
 }
 
 struct TodoRowView: View {
+    @Environment(\.appLanguage) private var appLanguage
     let todo: TodoItem
     var onToggleContentCheckbox: ((Int) -> Void)?
     var onSelect: (() -> Void)?
@@ -703,48 +779,51 @@ struct TodoRowView: View {
     @State private var selectedVideoPreview: VideoAttachmentPreview?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(todo.title.isEmpty ? "제목 없음" : todo.title)
+        VStack(alignment: .leading, spacing: TodoRowMetrics.contentSpacing) {
+            Text(todo.title.isEmpty ? appLanguage.text(korean: "제목 없음", english: "Untitled") : todo.title)
                 .strikethrough(todo.isCompleted)
                 .foregroundStyle(todo.isCompleted ? .secondary : .primary)
 
             if !todo.content.trimmingCharacters(in: .whitespacesAndNewlines)
                 .isEmpty
             {
-                RichTodoContentView(content: todo.content, compact: true) { lineIndex in
+                RichTodoContentView(content: todo.content, compact: true) {
+                    lineIndex in
                     onToggleContentCheckbox?(lineIndex)
                 }
             }
 
-            if let scheduleText = todo.scheduleSummary {
-                Label(scheduleText, systemImage: "calendar")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            if let reminders = todo.reminders, !reminders.isEmpty {
-                Text("\(reminders.count)개의 미리알림")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+            metadataRows
 
             if let attachments = todo.attachments, !attachments.isEmpty {
                 HStack(spacing: 8) {
-                    ForEach(attachments.sorted { $0.createdAt < $1.createdAt }.prefix(3)) { attachment in
+                    ForEach(
+                        attachments.sorted { $0.createdAt < $1.createdAt }
+                            .prefix(3)
+                    ) { attachment in
                         let draft = TodoAttachmentDraft(attachment: attachment)
 
-                        if attachment.kind == .photo || attachment.kind == .video {
+                        if attachment.kind == .photo
+                            || attachment.kind == .video
+                        {
                             Button {
-                                if let preview = PhotoAttachmentPreview(attachment: draft) {
+                                if let preview = PhotoAttachmentPreview(
+                                    attachment: draft
+                                ) {
                                     selectedPhotoPreview = preview
-                                } else if let preview = VideoAttachmentPreview(attachment: draft) {
+                                } else if let preview = VideoAttachmentPreview(
+                                    attachment: draft
+                                ) {
                                     selectedVideoPreview = preview
                                 }
                             } label: {
                                 AttachmentThumbnail(attachment: draft)
                             }
                             .buttonStyle(.plain)
-                            .accessibilityLabel(attachment.kind == .photo ? "사진 크게 보기" : "동영상 재생")
+                            .accessibilityLabel(
+                                attachment.kind == .photo
+                                    ? appLanguage.text(korean: "사진 크게 보기", english: "View Photo") : appLanguage.text(korean: "동영상 재생", english: "Play Video")
+                            )
                         } else {
                             AttachmentThumbnail(attachment: draft)
                         }
@@ -755,21 +834,13 @@ struct TodoRowView: View {
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.secondary)
                             .frame(width: 56, height: 56)
-                            .background(.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+                            .background(
+                                .secondary.opacity(0.12),
+                                in: RoundedRectangle(cornerRadius: 8)
+                            )
                     }
                 }
-                .padding(.top, 4)
-            }
-
-            if let latitude = todo.locationLatitude,
-               let longitude = todo.locationLongitude
-            {
-                Label(
-                    "\(latitude.formatted(.number.precision(.fractionLength(5)))), \(longitude.formatted(.number.precision(.fractionLength(5))))",
-                    systemImage: "mappin.and.ellipse"
-                )
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .padding(.top, 2)
             }
         }
         .contentShape(Rectangle())
@@ -783,4 +854,75 @@ struct TodoRowView: View {
             VideoAttachmentPreviewSheet(preview: preview)
         }
     }
+
+    @ViewBuilder
+    private var metadataRows: some View {
+        VStack(alignment: .leading, spacing: TodoRowMetrics.metadataRowSpacing)
+        {
+            HStack(spacing: TodoRowMetrics.metadataColumnSpacing) {
+                if let scheduleText = todo.scheduleSummary(in: appLanguage) {
+                    metadataLabel(scheduleText, systemImage: "calendar")
+                }
+
+                metadataLabel(
+                    todo.priority.shortTitle,
+                    systemImage: todo.priority.systemImage
+                )
+            }
+
+            if hasSecondaryMetadata {
+                HStack(spacing: TodoRowMetrics.metadataColumnSpacing) {
+                    if let reminders = todo.reminders, !reminders.isEmpty {
+                        metadataLabel(
+                            appLanguage.text(korean: "\(reminders.count)개의 미리알림", english: "\(reminders.count) reminders"),
+                            systemImage: "bell.badge"
+                        )
+                    }
+
+                    if let locationText {
+                        metadataLabel(
+                            locationText,
+                            systemImage: "mappin.and.ellipse"
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private var hasSecondaryMetadata: Bool {
+        let hasReminders = !(todo.reminders ?? []).isEmpty
+        return hasReminders || locationText != nil
+    }
+
+    private var locationText: String? {
+        guard let latitude = todo.locationLatitude,
+            let longitude = todo.locationLongitude
+        else {
+            return nil
+        }
+
+        return
+            "\(latitude.formatted(.number.precision(.fractionLength(5)))), \(longitude.formatted(.number.precision(.fractionLength(5))))"
+    }
+
+    private func metadataLabel(_ text: String, systemImage: String) -> some View
+    {
+        Label(text, systemImage: systemImage)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+            .labelStyle(.titleAndIcon)
+    }
+}
+
+#Preview {
+    ContentView()
+        .modelContainer(
+            for: [
+                TodoItem.self, TodoAttachment.self, Reminder.self,
+                AnniversaryItem.self,
+            ],
+            inMemory: true
+        )
 }

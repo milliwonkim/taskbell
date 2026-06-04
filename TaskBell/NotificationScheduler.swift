@@ -18,7 +18,7 @@ enum NotificationScheduler {
         }
     }
 
-    static func scheduleMainDate(for todo: TodoItem) async {
+    static func scheduleMainDate(for todo: TodoItem, language: AppLanguage) async {
         guard todo.scheduleMode != .none, let scheduledStartAt = todo.scheduledStartAt else {
             await cancelMainDate(for: todo)
             return
@@ -30,8 +30,8 @@ enum NotificationScheduler {
         }
 
         let content = UNMutableNotificationContent()
-        content.title = notificationTitle(from: todo.title)
-        content.body = mainDateNotificationBody(from: todo.content)
+        content.title = notificationTitle(from: todo.title, language: language)
+        content.body = mainDateNotificationBody(from: todo.content, language: language)
         content.categoryIdentifier = "todo-reminder"
         content.attachments = notificationIconAttachments()
         content.sound = .default
@@ -55,7 +55,7 @@ enum NotificationScheduler {
         }
     }
 
-    static func schedule(_ reminder: Reminder, todoTitle: String, todoContent: String) async {
+    static func schedule(_ reminder: Reminder, todoTitle: String, todoContent: String, language: AppLanguage) async {
         guard reminder.isEnabled else {
             await cancel(reminder)
             return
@@ -67,8 +67,8 @@ enum NotificationScheduler {
         }
 
         let content = UNMutableNotificationContent()
-        content.title = notificationTitle(from: todoTitle)
-        content.body = notificationBody(from: todoContent, repeatRule: reminder.repeatRule)
+        content.title = notificationTitle(from: todoTitle, language: language)
+        content.body = notificationBody(from: todoContent, repeatRule: reminder.repeatRule, language: language)
         content.categoryIdentifier = "todo-reminder"
         content.attachments = notificationIconAttachments()
 
@@ -108,34 +108,36 @@ enum NotificationScheduler {
         notificationCenter.removeDeliveredNotifications(withIdentifiers: [identifier])
     }
 
-    static func rescheduleAll(todos: [TodoItem]) async {
+    static func rescheduleAll(todos: [TodoItem], language: AppLanguage) async {
         for todo in todos {
-            await scheduleMainDate(for: todo)
+            await scheduleMainDate(for: todo, language: language)
 
             for reminder in todo.reminders ?? [] {
-                await schedule(reminder, todoTitle: todo.title, todoContent: todo.content)
+                await schedule(reminder, todoTitle: todo.title, todoContent: todo.content, language: language)
             }
         }
     }
 
-    private static func notificationTitle(from todoTitle: String) -> String {
+    private static func notificationTitle(from todoTitle: String, language: AppLanguage) -> String {
         let trimmedTitle = todoTitle.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmedTitle.isEmpty ? "할 일이 있어요" : trimmedTitle
+        return trimmedTitle.isEmpty ? language.text(korean: "할 일이 있어요", english: "You have a todo") : trimmedTitle
     }
 
-    private static func notificationBody(from todoContent: String, repeatRule: ReminderRepeatRule) -> String {
+    private static func notificationBody(from todoContent: String, repeatRule: ReminderRepeatRule, language: AppLanguage) -> String {
         let trimmedContent = todoContent.trimmingCharacters(in: .whitespacesAndNewlines)
 
         if !trimmedContent.isEmpty {
             return trimmedContent
         }
 
-        return repeatRule == .once ? "미리알림 시간입니다." : "\(repeatRule.title) 반복 미리알림입니다."
+        return repeatRule == .once
+            ? language.text(korean: "미리알림 시간입니다.", english: "It's reminder time.")
+            : language.text(korean: "\(repeatRule.title(in: language)) 반복 미리알림입니다.", english: "This is a repeating \(repeatRule.title(in: language).lowercased()) reminder.")
     }
 
-    private static func mainDateNotificationBody(from todoContent: String) -> String {
+    private static func mainDateNotificationBody(from todoContent: String, language: AppLanguage) -> String {
         let trimmedContent = todoContent.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmedContent.isEmpty ? "할 일 시간입니다." : trimmedContent
+        return trimmedContent.isEmpty ? language.text(korean: "할 일 시간입니다.", english: "It's time for your todo.") : trimmedContent
     }
 
     private static func mainDateNotificationIdentifier(for todo: TodoItem) -> String {

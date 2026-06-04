@@ -6,17 +6,18 @@
 import SwiftUI
 
 struct RichTodoEditor: View {
+    @Environment(\.appLanguage) private var appLanguage
     @Binding var content: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             RichTodoToolBar { tool in
-                append(tool.template)
+                append(tool.template(in: appLanguage))
             }
 
             ZStack(alignment: .topLeading) {
                 if content.isEmpty {
-                    Text("내용")
+                    Text(appLanguage.text(korean: "내용", english: "Content"))
                         .foregroundStyle(.tertiary)
                         .padding(.top, 8)
                         .padding(.leading, 5)
@@ -28,7 +29,7 @@ struct RichTodoEditor: View {
 
             if !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
-                    Label("미리보기", systemImage: "eye")
+                    Label(appLanguage.text(korean: "미리보기", english: "Preview"), systemImage: "eye")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
 
@@ -56,6 +57,7 @@ struct RichTodoEditor: View {
 }
 
 private struct RichTodoToolBar: View {
+    @Environment(\.appLanguage) private var appLanguage
     let onSelect: (RichTodoTool) -> Void
 
     var body: some View {
@@ -65,7 +67,7 @@ private struct RichTodoToolBar: View {
                     Button {
                         onSelect(tool)
                     } label: {
-                        Label(tool.title, systemImage: tool.systemImage)
+                        Label(tool.title(in: appLanguage), systemImage: tool.systemImage)
                             .font(.caption.weight(.semibold))
                             .labelStyle(.titleAndIcon)
                             .padding(.horizontal, 10)
@@ -73,7 +75,7 @@ private struct RichTodoToolBar: View {
                             .background(.secondary.opacity(0.12), in: Capsule())
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel(tool.title)
+                    .accessibilityLabel(tool.title(in: appLanguage))
                 }
             }
         }
@@ -90,20 +92,20 @@ private enum RichTodoTool: String, CaseIterable, Identifiable {
 
     var id: Self { self }
 
-    var title: String {
+    func title(in language: AppLanguage) -> String {
         switch self {
         case .paragraph:
-            "문단"
+            language.text(korean: "문단", english: "Paragraph")
         case .strongParagraph:
-            "강조"
+            language.text(korean: "강조", english: "Emphasis")
         case .checkbox:
-            "체크박스"
+            language.text(korean: "체크박스", english: "Checkbox")
         case .underline:
-            "밑줄"
+            language.text(korean: "밑줄", english: "Underline")
         case .bullet:
-            "목록"
+            language.text(korean: "목록", english: "List")
         case .quote:
-            "인용"
+            language.text(korean: "인용", english: "Quote")
         }
     }
 
@@ -124,25 +126,26 @@ private enum RichTodoTool: String, CaseIterable, Identifiable {
         }
     }
 
-    var template: String {
+    func template(in language: AppLanguage) -> String {
         switch self {
         case .paragraph:
-            "내용을 입력하세요"
+            language.text(korean: "내용을 입력하세요", english: "Enter content")
         case .strongParagraph:
-            "## 강조 문단"
+            "##"
         case .checkbox:
-            "- [ ] 체크할 일"
+            "- [ ]"
         case .underline:
-            "__밑줄 텍스트__"
+            language.text(korean: "__밑줄 텍스트__", english: "__Underlined text__")
         case .bullet:
-            "- 목록 항목"
+            language.text(korean: "- 목록 항목", english: "- List item")
         case .quote:
-            "> 메모"
+            language.text(korean: "> 메모", english: "> Note")
         }
     }
 }
 
 struct RichTodoContentView: View {
+    @Environment(\.appLanguage) private var appLanguage
     let content: String
     var compact: Bool = false
     var onToggleCheckbox: ((Int) -> Void)?
@@ -195,14 +198,16 @@ struct RichTodoContentView: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(onToggleCheckbox == nil)
-                .accessibilityLabel(isChecked ? "체크 해제" : "체크")
+                .accessibilityLabel(isChecked ? appLanguage.text(korean: "체크 해제", english: "Uncheck") : appLanguage.text(korean: "체크", english: "Check"))
 
-                RichInlineText(text: block.text.isEmpty ? "체크할 일" : block.text)
-                    .font(compact ? .caption : .body)
-                    .foregroundStyle(compact ? .secondary : .primary)
-                    .strikethrough(isChecked)
-                    .lineLimit(compact ? 1 : nil)
-                    .padding(.top, compact ? 8 : 11)
+                if !block.text.isEmpty {
+                    RichInlineText(text: block.text)
+                        .font(compact ? .caption : .body)
+                        .foregroundStyle(compact ? .secondary : .primary)
+                        .strikethrough(isChecked)
+                        .lineLimit(compact ? 1 : nil)
+                        .padding(.top, compact ? 8 : 11)
+                }
             }
         case .bullet:
             HStack(alignment: .top, spacing: 7) {

@@ -10,6 +10,8 @@ struct TodoDraft {
     var content: String
     var isCompleted: Bool
     var scheduleMode: TodoScheduleMode
+    var priority: TodoPriorityQuadrant
+    var autoDeletePeriod: TodoAutoDeletePeriod
     var scheduledStartAt: Date?
     var scheduledEndAt: Date?
     var locationLatitude: Double?
@@ -22,6 +24,8 @@ struct TodoDraft {
         content: String = "",
         isCompleted: Bool = false,
         scheduleMode: TodoScheduleMode = .singleDay,
+        priority: TodoPriorityQuadrant = .importantUrgent,
+        autoDeletePeriod: TodoAutoDeletePeriod = .oneMonth,
         scheduledStartAt: Date? = .now,
         scheduledEndAt: Date? = nil,
         locationLatitude: Double? = nil,
@@ -33,6 +37,8 @@ struct TodoDraft {
         self.content = content
         self.isCompleted = isCompleted
         self.scheduleMode = scheduleMode
+        self.priority = priority
+        self.autoDeletePeriod = autoDeletePeriod
         self.scheduledStartAt = scheduledStartAt
         self.scheduledEndAt = scheduledEndAt
         self.locationLatitude = locationLatitude
@@ -47,6 +53,8 @@ struct TodoDraft {
             content: todo.content,
             isCompleted: todo.isCompleted,
             scheduleMode: todo.scheduleMode,
+            priority: todo.priority,
+            autoDeletePeriod: todo.autoDeletePeriod,
             scheduledStartAt: todo.scheduledStartAt,
             scheduledEndAt: todo.scheduledEndAt,
             locationLatitude: todo.locationLatitude,

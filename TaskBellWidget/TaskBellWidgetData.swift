@@ -31,6 +31,53 @@ struct TaskBellWidgetSnapshot: Codable {
     let weekEnd: Date
     let days: [TaskBellWidgetDaySnapshot]
     let todos: [TaskBellWidgetTodoSnapshot]
+    let anniversaries: [TaskBellWidgetAnniversarySnapshot]
+    let languageRawValue: String
+
+    enum CodingKeys: String, CodingKey {
+        case generatedAt
+        case weekStart
+        case weekEnd
+        case days
+        case todos
+        case anniversaries
+        case languageRawValue
+    }
+
+    init(
+        generatedAt: Date,
+        weekStart: Date,
+        weekEnd: Date,
+        days: [TaskBellWidgetDaySnapshot],
+        todos: [TaskBellWidgetTodoSnapshot],
+        anniversaries: [TaskBellWidgetAnniversarySnapshot],
+        languageRawValue: String = "ko"
+    ) {
+        self.generatedAt = generatedAt
+        self.weekStart = weekStart
+        self.weekEnd = weekEnd
+        self.days = days
+        self.todos = todos
+        self.anniversaries = anniversaries
+        self.languageRawValue = languageRawValue
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        generatedAt = try container.decode(Date.self, forKey: .generatedAt)
+        weekStart = try container.decode(Date.self, forKey: .weekStart)
+        weekEnd = try container.decode(Date.self, forKey: .weekEnd)
+        days = try container.decode([TaskBellWidgetDaySnapshot].self, forKey: .days)
+        todos = try container.decode([TaskBellWidgetTodoSnapshot].self, forKey: .todos)
+        anniversaries = try container.decodeIfPresent(
+            [TaskBellWidgetAnniversarySnapshot].self,
+            forKey: .anniversaries
+        ) ?? []
+        languageRawValue = try container.decodeIfPresent(
+            String.self,
+            forKey: .languageRawValue
+        ) ?? "ko"
+    }
 
     static var empty: TaskBellWidgetSnapshot {
         let calendar = Calendar.current
@@ -48,7 +95,9 @@ struct TaskBellWidgetSnapshot: Codable {
             weekStart: weekStart,
             weekEnd: weekEnd,
             days: days,
-            todos: []
+            todos: [],
+            anniversaries: [],
+            languageRawValue: "ko"
         )
     }
 
@@ -74,20 +123,33 @@ struct TaskBellWidgetSnapshot: Codable {
             days: days,
             todos: [
                 TaskBellWidgetTodoSnapshot(
-                    title: "기획 정리",
+                    title: "Planning Notes",
                     isCompleted: false,
                     scheduledStartAt: now,
                     scheduledEndAt: nil,
                     scheduleModeRawValue: "singleDay"
                 ),
                 TaskBellWidgetTodoSnapshot(
-                    title: "리마인더 확인",
+                    title: "Check Reminders",
                     isCompleted: true,
                     scheduledStartAt: now,
                     scheduledEndAt: nil,
                     scheduleModeRawValue: "singleDay"
                 )
-            ]
+            ],
+            anniversaries: [
+                TaskBellWidgetAnniversarySnapshot(
+                    title: "Project Launch",
+                    targetDate: now.addingTimeInterval(86400 * 12),
+                    repeatsYearly: false
+                ),
+                TaskBellWidgetAnniversarySnapshot(
+                    title: "Anniversary",
+                    targetDate: now.addingTimeInterval(86400 * 36),
+                    repeatsYearly: true
+                )
+            ],
+            languageRawValue: "en"
         )
     }
 }
@@ -109,5 +171,15 @@ struct TaskBellWidgetTodoSnapshot: Codable, Identifiable {
 
     var id: String {
         "\(title)-\(scheduledStartAt?.timeIntervalSinceReferenceDate ?? 0)-\(scheduledEndAt?.timeIntervalSinceReferenceDate ?? 0)"
+    }
+}
+
+struct TaskBellWidgetAnniversarySnapshot: Codable, Identifiable {
+    let title: String
+    let targetDate: Date
+    let repeatsYearly: Bool
+
+    var id: String {
+        "\(title)-\(targetDate.timeIntervalSinceReferenceDate)-\(repeatsYearly)"
     }
 }

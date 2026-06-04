@@ -25,6 +25,7 @@ struct PhotoAttachmentPreview: Identifiable {
 
 struct PhotoAttachmentPreviewSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.appLanguage) private var appLanguage
     let preview: PhotoAttachmentPreview
 
     var body: some View {
@@ -40,7 +41,7 @@ struct PhotoAttachmentPreviewSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("닫기") {
+                    Button(appLanguage.text(korean: "닫기", english: "Close")) {
                         dismiss()
                     }
                     .foregroundStyle(.white)
@@ -86,6 +87,7 @@ struct VideoAttachmentPreview: Identifiable {
 
 struct VideoAttachmentPreviewSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.appLanguage) private var appLanguage
     let preview: VideoAttachmentPreview
     @State private var player: AVPlayer
 
@@ -107,7 +109,7 @@ struct VideoAttachmentPreviewSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("닫기") {
+                    Button(appLanguage.text(korean: "닫기", english: "Close")) {
                         dismiss()
                     }
                     .foregroundStyle(.white)

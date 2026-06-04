@@ -14,6 +14,8 @@ final class TodoItem {
     var content: String = ""
     var isCompleted: Bool = false
     var scheduleModeRawValue: String = TodoScheduleMode.none.rawValue
+    var priorityRawValue: String = TodoPriorityQuadrant.importantUrgent.rawValue
+    var autoDeletePeriodRawValue: String = TodoAutoDeletePeriod.oneMonth.rawValue
     var scheduledStartAt: Date?
     var scheduledEndAt: Date?
     var locationLatitude: Double?
@@ -32,6 +34,8 @@ final class TodoItem {
         content: String = "",
         isCompleted: Bool = false,
         scheduleMode: TodoScheduleMode = .none,
+        priority: TodoPriorityQuadrant = .importantUrgent,
+        autoDeletePeriod: TodoAutoDeletePeriod = .oneMonth,
         scheduledStartAt: Date? = nil,
         scheduledEndAt: Date? = nil,
         locationLatitude: Double? = nil,
@@ -45,6 +49,8 @@ final class TodoItem {
         self.content = content
         self.isCompleted = isCompleted
         self.scheduleModeRawValue = scheduleMode.rawValue
+        self.priorityRawValue = priority.rawValue
+        self.autoDeletePeriodRawValue = autoDeletePeriod.rawValue
         self.scheduledStartAt = scheduledStartAt
         self.scheduledEndAt = scheduledEndAt
         self.locationLatitude = locationLatitude
@@ -60,6 +66,16 @@ final class TodoItem {
     var scheduleMode: TodoScheduleMode {
         get { TodoScheduleMode(rawValue: scheduleModeRawValue) ?? .none }
         set { scheduleModeRawValue = newValue.rawValue }
+    }
+
+    var priority: TodoPriorityQuadrant {
+        get { TodoPriorityQuadrant(rawValue: priorityRawValue) ?? .importantUrgent }
+        set { priorityRawValue = newValue.rawValue }
+    }
+
+    var autoDeletePeriod: TodoAutoDeletePeriod {
+        get { TodoAutoDeletePeriod(rawValue: autoDeletePeriodRawValue) ?? .oneMonth }
+        set { autoDeletePeriodRawValue = newValue.rawValue }
     }
 }
 
@@ -105,11 +121,15 @@ enum TodoAttachmentKind: String, Codable {
     case video
 
     var title: String {
+        title(in: .korean)
+    }
+
+    func title(in language: AppLanguage) -> String {
         switch self {
         case .photo:
-            "사진"
+            language.text(korean: "사진", english: "Photo")
         case .video:
-            "동영상"
+            language.text(korean: "동영상", english: "Video")
         }
     }
 }
@@ -122,14 +142,109 @@ enum TodoScheduleMode: String, CaseIterable, Identifiable, Codable {
     var id: Self { self }
 
     var title: String {
+        title(in: .korean)
+    }
+
+    func title(in language: AppLanguage) -> String {
         switch self {
         case .none:
-            "없음"
+            language.text(korean: "없음", english: "None")
         case .singleDay:
-            "하루"
+            language.text(korean: "하루", english: "Single Day")
         case .dateRange:
-            "기간"
+            language.text(korean: "기간", english: "Date Range")
         }
+    }
+}
+
+enum TodoPriorityQuadrant: String, CaseIterable, Identifiable, Codable {
+    case importantUrgent
+    case importantNotUrgent
+    case notImportantUrgent
+    case notImportantNotUrgent
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .importantUrgent:
+            "Important & Urgent"
+        case .importantNotUrgent:
+            "Important, Not Urgent"
+        case .notImportantUrgent:
+            "Not Important, Urgent"
+        case .notImportantNotUrgent:
+            "Not Important, Not Urgent"
+        }
+    }
+
+    var shortTitle: String {
+        switch self {
+        case .importantUrgent:
+            "Important · Urgent"
+        case .importantNotUrgent:
+            "Important · Not Urgent"
+        case .notImportantUrgent:
+            "Not Important · Urgent"
+        case .notImportantNotUrgent:
+            "Not Important · Not Urgent"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .importantUrgent:
+            "flame.fill"
+        case .importantNotUrgent:
+            "star.fill"
+        case .notImportantUrgent:
+            "bolt.fill"
+        case .notImportantNotUrgent:
+            "tray.fill"
+        }
+    }
+}
+
+enum TodoAutoDeletePeriod: String, CaseIterable, Identifiable, Codable {
+    case oneWeek
+    case oneMonth
+    case sixMonths
+    case oneYear
+
+    var id: Self { self }
+
+    var title: String {
+        title(in: .korean)
+    }
+
+    func title(in language: AppLanguage) -> String {
+        switch self {
+        case .oneWeek:
+            language.text(korean: "일주일", english: "1 Week")
+        case .oneMonth:
+            language.text(korean: "한 달", english: "1 Month")
+        case .sixMonths:
+            language.text(korean: "6개월", english: "6 Months")
+        case .oneYear:
+            language.text(korean: "1년", english: "1 Year")
+        }
+    }
+
+    var dateComponent: DateComponents {
+        switch self {
+        case .oneWeek:
+            DateComponents(day: 7)
+        case .oneMonth:
+            DateComponents(month: 1)
+        case .sixMonths:
+            DateComponents(month: 6)
+        case .oneYear:
+            DateComponents(year: 1)
+        }
+    }
+
+    func expirationDate(from date: Date, calendar: Calendar = .current) -> Date {
+        calendar.date(byAdding: dateComponent, to: date) ?? date
     }
 }
 
@@ -177,6 +292,29 @@ final class Reminder {
     }
 }
 
+@Model
+final class AnniversaryItem {
+    var id: UUID = UUID()
+    var title: String = ""
+    var targetDate: Date = Date()
+    var repeatsYearly: Bool = true
+    var createdAt: Date = Date()
+
+    init(
+        id: UUID = UUID(),
+        title: String,
+        targetDate: Date,
+        repeatsYearly: Bool = true,
+        createdAt: Date = .now
+    ) {
+        self.id = id
+        self.title = title
+        self.targetDate = targetDate
+        self.repeatsYearly = repeatsYearly
+        self.createdAt = createdAt
+    }
+}
+
 enum ReminderRepeatRule: String, CaseIterable, Identifiable, Codable {
     case once
     case daily
@@ -187,17 +325,21 @@ enum ReminderRepeatRule: String, CaseIterable, Identifiable, Codable {
     var id: Self { self }
 
     var title: String {
+        title(in: .korean)
+    }
+
+    func title(in language: AppLanguage) -> String {
         switch self {
         case .once:
-            "한 번"
+            language.text(korean: "한 번", english: "Once")
         case .daily:
-            "매일"
+            language.text(korean: "매일", english: "Daily")
         case .weekly:
-            "매주"
+            language.text(korean: "매주", english: "Weekly")
         case .monthly:
-            "매월"
+            language.text(korean: "매월", english: "Monthly")
         case .yearly:
-            "매년"
+            language.text(korean: "매년", english: "Yearly")
         }
     }
 }
@@ -217,30 +359,43 @@ enum ReminderDeliveryStyle: String, CaseIterable, Identifiable, Codable {
     }
 
     var title: String {
+        title(in: .korean)
+    }
+
+    func title(in language: AppLanguage) -> String {
         switch self {
         case .notificationOnly:
-            "푸시 알림"
+            language.text(korean: "푸시 알림", english: "Push Notification")
         case .notificationAndVibration:
-            "푸시 알림 + 진동"
+            language.text(korean: "푸시 알림 + 진동", english: "Push Notification + Vibration")
         }
     }
 
-    func title(repeatRule: ReminderRepeatRule) -> String {
-        var components = [title]
+    func title(repeatRule: ReminderRepeatRule, language: AppLanguage = .korean) -> String {
+        var components = [title(in: language)]
 
         if repeatRule != .once {
-            components.append("\(repeatRule.title) 반복")
+            components.append(
+                language.text(
+                    korean: "\(repeatRule.title(in: language)) 반복",
+                    english: "Repeats \(repeatRule.title(in: language))"
+                )
+            )
         }
 
         return components.joined(separator: " + ")
     }
 
     var subtitle: String {
+        subtitle(in: .korean)
+    }
+
+    func subtitle(in language: AppLanguage) -> String {
         switch self {
         case .notificationOnly:
-            "소리와 진동 없이 알림만 표시"
+            language.text(korean: "소리와 진동 없이 알림만 표시", english: "Shows notifications without sound or vibration")
         case .notificationAndVibration:
-            "기기 설정에 따라 소리와 진동 사용"
+            language.text(korean: "기기 설정에 따라 소리와 진동 사용", english: "Uses sound and vibration based on device settings")
         }
     }
 }
@@ -252,6 +407,8 @@ extension TodoItem {
             content: legacyTodo.content,
             isCompleted: legacyTodo.isCompleted,
             scheduleMode: legacyTodo.scheduleMode,
+            priority: legacyTodo.priority,
+            autoDeletePeriod: legacyTodo.autoDeletePeriod,
             scheduledStartAt: legacyTodo.scheduledStartAt,
             scheduledEndAt: legacyTodo.scheduledEndAt,
             locationLatitude: legacyTodo.locationLatitude,

@@ -83,7 +83,7 @@ extension TodoItem {
         }
     }
 
-    var scheduleSummary: String? {
+    func scheduleSummary(in language: AppLanguage) -> String? {
         guard let start = scheduledStartAt else {
             return nil
         }
@@ -92,13 +92,13 @@ extension TodoItem {
         case .none:
             return nil
         case .singleDay:
-            return start.formatted(date: .abbreviated, time: .shortened)
+            return language.formattedScheduleDateTime(start)
         case .dateRange:
             guard let end = scheduledEndAt else {
-                return start.formatted(date: .abbreviated, time: .shortened)
+                return language.formattedScheduleDateTime(start)
             }
 
-            return "\(start.formatted(date: .abbreviated, time: .shortened)) ~ \(end.formatted(date: .abbreviated, time: .shortened))"
+            return "\(language.formattedScheduleDateTime(start)) ~ \(language.formattedScheduleDateTime(end))"
         }
     }
 }

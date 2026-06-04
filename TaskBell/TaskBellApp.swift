@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import Foundation
 
 @main
 struct TaskBellApp: App {
@@ -22,18 +23,22 @@ struct TaskBellApp: App {
 }
 
 enum TaskBellModelContainer {
+    private static let appGroupIdentifier = "group.kiwonkim.TaskBell"
     private static let cloudKitContainerIdentifier = "iCloud.kiwonkim.TaskBell"
 
     private static let schema = Schema([
         TodoItem.self,
         TodoAttachment.self,
         Reminder.self,
+        AnniversaryItem.self,
     ])
 
     static func makeCloudContainer() -> ModelContainer {
         let cloudContainer: ModelContainer
 
         do {
+            try ensureAppGroupApplicationSupportDirectoryExists()
+
             cloudContainer = try ModelContainer(
                 for: schema,
                 configurations: [cloudConfiguration]
@@ -44,6 +49,23 @@ enum TaskBellModelContainer {
 
         importLegacyLocalStoreIfNeeded(into: cloudContainer)
         return cloudContainer
+    }
+
+    private static func ensureAppGroupApplicationSupportDirectoryExists() throws {
+        guard let appGroupURL = FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: appGroupIdentifier
+        ) else {
+            throw CocoaError(.fileNoSuchFile)
+        }
+
+        let applicationSupportURL = appGroupURL
+            .appendingPathComponent("Library", isDirectory: true)
+            .appendingPathComponent("Application Support", isDirectory: true)
+
+        try FileManager.default.createDirectory(
+            at: applicationSupportURL,
+            withIntermediateDirectories: true
+        )
     }
 
     private static var cloudConfiguration: ModelConfiguration {

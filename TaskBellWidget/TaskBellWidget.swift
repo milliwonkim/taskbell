@@ -16,7 +16,7 @@ struct TaskBellWidget: Widget {
                 .containerBackground(.background, for: .widget)
         }
         .configurationDisplayName("TaskBell")
-        .description("이번 주 날짜와 할 일을 한눈에 확인합니다.")
+        .description("View this week's dates and todos at a glance.")
         .supportedFamilies([
             .systemSmall,
             .systemMedium,

@@ -6,6 +6,7 @@
 import SwiftUI
 
 struct LiquidGlassAddButton: View {
+    @Environment(\.appLanguage) private var appLanguage
     let action: () -> Void
 
     var body: some View {
@@ -18,6 +19,6 @@ struct LiquidGlassAddButton: View {
         .buttonBorderShape(.circle)
         .controlSize(.regular)
         .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 4)
-        .accessibilityLabel("할 일 추가")
+        .accessibilityLabel(appLanguage.text(korean: "할 일 추가", english: "Add Todo"))
     }
 }

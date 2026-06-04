@@ -6,6 +6,7 @@
 import SwiftUI
 
 struct MonthCalendarView: View {
+    @Environment(\.appLanguage) private var appLanguage
     @Binding var selectedDate: Date
     @Binding var displayedMonth: Date
     let todos: [TodoItem]
@@ -26,13 +27,11 @@ struct MonthCalendarView: View {
     }
 
     private var monthSummary: String {
-        return monthTodoCount == 0 ? "이번 달 할 일 없음" : "이번 달 할 일 \(monthTodoCount)개"
+        return monthTodoCount == 0 ? appLanguage.text(korean: "이번 달 할 일 없음", english: "No todos this month") : appLanguage.text(korean: "이번 달 할 일 \(monthTodoCount)개", english: "\(monthTodoCount) todos this month")
     }
 
     private var weekdaySymbols: [String] {
-        let symbols = calendar.veryShortStandaloneWeekdaySymbols
-        let firstWeekdayIndex = calendar.firstWeekday - 1
-        return Array(symbols[firstWeekdayIndex...] + symbols[..<firstWeekdayIndex])
+        appLanguage.veryShortWeekdaySymbols(calendar: calendar)
     }
 
     private var monthDays: [CalendarDay] {
@@ -74,8 +73,8 @@ struct MonthCalendarView: View {
                 calendarHeader
 
                 LazyVGrid(columns: columns, spacing: 0) {
-                    ForEach(weekdaySymbols, id: \.self) { weekday in
-                        Text(weekday)
+                    ForEach(weekdaySymbols.indices, id: \.self) { index in
+                        Text(weekdaySymbols[index])
                             .font(.caption2.bold())
                             .textCase(.uppercase)
                             .foregroundStyle(.secondary)
@@ -118,7 +117,7 @@ struct MonthCalendarView: View {
 
             Spacer()
 
-            Button("오늘") {
+            Button(appLanguage.text(korean: "오늘", english: "Today")) {
                 withAnimation(.snappy) {
                     selectedDate = .now
                     displayedMonth = .now
@@ -136,7 +135,7 @@ struct MonthCalendarView: View {
                         .font(.subheadline.weight(.semibold))
                         .frame(width: 28, height: 28)
                 }
-                .accessibilityLabel("이전 달")
+                .accessibilityLabel(appLanguage.text(korean: "이전 달", english: "Previous Month"))
 
                 Button {
                     moveMonth(by: 1)
@@ -145,7 +144,7 @@ struct MonthCalendarView: View {
                         .font(.subheadline.weight(.semibold))
                         .frame(width: 28, height: 28)
                 }
-                .accessibilityLabel("다음 달")
+                .accessibilityLabel(appLanguage.text(korean: "다음 달", english: "Next Month"))
             }
             .buttonStyle(.borderless)
         }
@@ -191,6 +190,7 @@ private struct CalendarDay: Identifiable {
 }
 
 private struct CalendarDayButton: View {
+    @Environment(\.appLanguage) private var appLanguage
     let day: CalendarDay
     let isSelected: Bool
     let isToday: Bool
@@ -272,12 +272,13 @@ private struct CalendarDayButton: View {
     }
 
     private var accessibilityLabel: String {
-        let dateText = day.date.formatted(date: .long, time: .omitted)
-        return todos.isEmpty ? dateText : "\(dateText), 할 일 \(todos.count)개, 완료 \(completedCount)개"
+        let dateText = appLanguage.formattedLongDate(day.date)
+        return todos.isEmpty ? dateText : appLanguage.text(korean: "\(dateText), 할 일 \(todos.count)개, 완료 \(completedCount)개", english: "\(dateText), \(todos.count) todos, \(completedCount) completed")
     }
 }
 
 private struct CalendarDayActivityView: View {
+    @Environment(\.appLanguage) private var appLanguage
     let totalCount: Int
     let completedCount: Int
     let isSelected: Bool
@@ -300,7 +301,7 @@ private struct CalendarDayActivityView: View {
                 Text("+\(totalCount - 5)")
                     .font(.caption2.bold())
                     .foregroundStyle(.secondary)
-                    .accessibilityLabel("추가 할 일 \(totalCount - 5)개")
+                    .accessibilityLabel(appLanguage.text(korean: "추가 할 일 \(totalCount - 5)개", english: "\(totalCount - 5) more todos"))
             }
         }
     }

@@ -39,6 +39,7 @@ struct TodoLocationSummaryView: View {
 }
 
 struct TodoLocationMapPreview: View {
+    @Environment(\.appLanguage) private var appLanguage
     let coordinate: TodoLocationCoordinate
 
     private var position: MapCameraPosition {
@@ -52,7 +53,7 @@ struct TodoLocationMapPreview: View {
 
     var body: some View {
         Map(initialPosition: position) {
-            Marker("위치", coordinate: coordinate.clLocationCoordinate)
+            Marker(appLanguage.text(korean: "위치", english: "Location"), coordinate: coordinate.clLocationCoordinate)
         }
         .frame(height: 140)
         .clipShape(RoundedRectangle(cornerRadius: 8))
@@ -62,6 +63,7 @@ struct TodoLocationMapPreview: View {
 
 struct TodoLocationPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.appLanguage) private var appLanguage
     @StateObject private var currentLocationProvider = CurrentLocationProvider()
     @State private var selectedCoordinate: TodoLocationCoordinate?
     @State private var searchText = ""
@@ -84,15 +86,16 @@ struct TodoLocationPickerSheet: View {
         NavigationStack {
             TappableMapView(
                 coordinate: $selectedCoordinate,
-                shouldTrackUserLocation: shouldUseCurrentLocation
+                shouldTrackUserLocation: shouldUseCurrentLocation,
+                selectedLocationTitle: appLanguage.text(korean: "선택한 위치", english: "Selected Location")
             )
                 .ignoresSafeArea(edges: .bottom)
-                .navigationTitle("위치 선택")
+                .navigationTitle(appLanguage.text(korean: "위치 선택", english: "Select Location"))
                 .navigationBarTitleDisplayMode(.inline)
                 .searchable(
                     text: $searchText,
                     placement: .navigationBarDrawer(displayMode: .always),
-                    prompt: "장소 또는 주소 검색"
+                    prompt: appLanguage.text(korean: "장소 또는 주소 검색", english: "Search for a place or address")
                 )
                 .onSubmit(of: .search) {
                     Task {
@@ -121,13 +124,13 @@ struct TodoLocationPickerSheet: View {
                 }
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("취소") {
+                        Button(appLanguage.text(korean: "취소", english: "Cancel")) {
                             dismiss()
                         }
                     }
 
                     ToolbarItem(placement: .confirmationAction) {
-                        Button("선택") {
+                        Button(appLanguage.text(korean: "선택", english: "Select")) {
                             guard let selectedCoordinate else {
                                 return
                             }
@@ -142,7 +145,7 @@ struct TodoLocationPickerSheet: View {
                     VStack(spacing: 0) {
                         searchResultList
 
-                        Text("지도를 탭하거나 장소를 검색해서 위치를 찍으세요.")
+                        Text(appLanguage.text(korean: "지도를 탭하거나 장소를 검색해서 위치를 찍으세요.", english: "Tap the map or search for a place to set a location."))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .padding(.horizontal, 14)
@@ -157,7 +160,7 @@ struct TodoLocationPickerSheet: View {
     @ViewBuilder
     private var searchResultList: some View {
         if isSearching {
-            ProgressView("검색 중")
+            ProgressView(appLanguage.text(korean: "검색 중", english: "Searching"))
                 .padding(.vertical, 12)
                 .frame(maxWidth: .infinity)
         } else if !searchResults.isEmpty {
@@ -195,7 +198,7 @@ struct TodoLocationPickerSheet: View {
             }
             .frame(maxHeight: 220)
         } else if didSearch {
-            Text("검색 결과가 없습니다.")
+            Text(appLanguage.text(korean: "검색 결과가 없습니다.", english: "No search results."))
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .padding(.vertical, 12)
@@ -226,7 +229,7 @@ struct TodoLocationPickerSheet: View {
         do {
             let response = try await MKLocalSearch(request: request).start()
             searchResults = response.mapItems.map { item in
-                TodoLocationSearchResult(mapItem: item)
+                TodoLocationSearchResult(mapItem: item, language: appLanguage)
             }
         } catch {
             searchResults = []
@@ -298,6 +301,7 @@ private final class CurrentLocationProvider: NSObject, ObservableObject, CLLocat
 private struct TappableMapView: UIViewRepresentable {
     @Binding var coordinate: TodoLocationCoordinate?
     let shouldTrackUserLocation: Bool
+    let selectedLocationTitle: String
 
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
@@ -379,7 +383,7 @@ private struct TappableMapView: UIViewRepresentable {
                 mapView.addAnnotation(annotation)
             }
 
-            annotation.title = "선택한 위치"
+            annotation.title = parent.selectedLocationTitle
             annotation.coordinate = coordinate.clLocationCoordinate
 
             if lastCenteredCoordinate != coordinate {
@@ -396,8 +400,8 @@ private struct TodoLocationSearchResult: Identifiable {
     let subtitle: String
     let coordinate: TodoLocationCoordinate
 
-    init(mapItem: MKMapItem) {
-        title = mapItem.name ?? "이름 없는 위치"
+    init(mapItem: MKMapItem, language: AppLanguage) {
+        title = mapItem.name ?? language.text(korean: "이름 없는 위치", english: "Unnamed Location")
         subtitle = mapItem.placemark.title ?? ""
         coordinate = TodoLocationCoordinate(
             latitude: mapItem.placemark.coordinate.latitude,

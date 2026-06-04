@@ -11,12 +11,24 @@ enum WidgetSnapshotStore {
 
     private static let fileName = "taskbell-weekly-widget.json"
 
-    static func save(todos: [TodoItem], now: Date = .now, calendar: Calendar = .current) {
+    static func save(
+        todos: [TodoItem],
+        anniversaries: [AnniversaryItem],
+        language: AppLanguage,
+        now: Date = .now,
+        calendar: Calendar = .current
+    ) {
         guard let url = snapshotURL else {
             return
         }
 
-        let snapshot = TaskBellWidgetSnapshot(todos: todos, now: now, calendar: calendar)
+        let snapshot = TaskBellWidgetSnapshot(
+            todos: todos,
+            anniversaries: anniversaries,
+            language: language,
+            now: now,
+            calendar: calendar
+        )
 
         do {
             let data = try JSONEncoder().encode(snapshot)
@@ -40,8 +52,16 @@ private struct TaskBellWidgetSnapshot: Codable {
     let weekEnd: Date
     let days: [TaskBellWidgetDaySnapshot]
     let todos: [TaskBellWidgetTodoSnapshot]
+    let anniversaries: [TaskBellWidgetAnniversarySnapshot]
+    let languageRawValue: String
 
-    init(todos: [TodoItem], now: Date, calendar: Calendar) {
+    init(
+        todos: [TodoItem],
+        anniversaries: [AnniversaryItem],
+        language: AppLanguage,
+        now: Date,
+        calendar: Calendar
+    ) {
         let weekInterval = calendar.dateInterval(of: .weekOfYear, for: now)
         let weekStart = weekInterval?.start ?? calendar.startOfDay(for: now)
         let weekEnd = calendar.date(byAdding: .day, value: 6, to: weekStart) ?? weekStart
@@ -80,6 +100,19 @@ private struct TaskBellWidgetSnapshot: Codable {
             )
         }
         self.todos = weekTodos.map { TaskBellWidgetTodoSnapshot(todo: $0, calendar: calendar) }
+        self.anniversaries = anniversaries
+            .sorted {
+                let firstDate = $0.nextOccurrence(from: now, calendar: calendar)
+                let secondDate = $1.nextOccurrence(from: now, calendar: calendar)
+
+                if firstDate == secondDate {
+                    return $0.createdAt > $1.createdAt
+                }
+
+                return firstDate < secondDate
+            }
+            .map { TaskBellWidgetAnniversarySnapshot(anniversary: $0) }
+        self.languageRawValue = language.rawValue
     }
 }
 
@@ -108,5 +141,17 @@ private struct TaskBellWidgetTodoSnapshot: Codable {
         self.scheduledStartAt = todo.scheduledStartAt
         self.scheduledEndAt = todo.scheduledEndAt
         self.scheduleModeRawValue = todo.scheduleModeRawValue
+    }
+}
+
+private struct TaskBellWidgetAnniversarySnapshot: Codable {
+    let title: String
+    let targetDate: Date
+    let repeatsYearly: Bool
+
+    init(anniversary: AnniversaryItem) {
+        self.title = anniversary.title
+        self.targetDate = anniversary.targetDate
+        self.repeatsYearly = anniversary.repeatsYearly
     }
 }
