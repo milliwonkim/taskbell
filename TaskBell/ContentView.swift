@@ -411,35 +411,176 @@ struct ContentView: View {
 
     private func addTodo(_ draft: TodoDraft) {
         withAnimation {
-            let todo = TodoItem(
-                title: draft.title,
-                content: draft.content,
-                isCompleted: draft.isCompleted,
-                scheduleMode: draft.scheduleMode,
-                priority: draft.priority,
-                autoDeletePeriod: draft.autoDeletePeriod,
-                scheduledStartAt: draft.scheduledStartAt,
-                scheduledEndAt: draft.scheduledEndAt,
-                locationLatitude: draft.locationLatitude,
-                locationLongitude: draft.locationLongitude
-            )
-            modelContext.insert(todo)
-
-            for attachmentDraft in draft.attachments {
-                let attachment = TodoAttachment(draft: attachmentDraft, todo: todo)
-                modelContext.insert(attachment)
-                todo.attachments = (todo.attachments ?? []) + [attachment]
+            let insertedTodos = expandedTodoDrafts(from: draft).map { occurrenceDraft in
+                insertTodo(occurrenceDraft)
             }
 
-            for reminderDraft in draft.reminders {
-                let reminder = Reminder(draft: reminderDraft, todo: todo)
-                modelContext.insert(reminder)
-                todo.reminders = (todo.reminders ?? []) + [reminder]
+            refreshWidgetSnapshot(with: todos + insertedTodos)
+            for todo in insertedTodos {
+                scheduleNotifications(for: todo)
             }
-
-            refreshWidgetSnapshot(with: todos + [todo])
-            scheduleNotifications(for: todo)
         }
+    }
+
+    private func insertTodo(_ draft: TodoDraft) -> TodoItem {
+        let todo = TodoItem(
+            title: draft.title,
+            content: draft.content,
+            isCompleted: draft.isCompleted,
+            scheduleMode: draft.scheduleMode,
+            priority: draft.priority,
+            autoDeletePeriod: draft.autoDeletePeriod,
+            scheduledStartAt: draft.scheduledStartAt,
+            scheduledEndAt: draft.scheduledEndAt,
+            locationLatitude: draft.locationLatitude,
+            locationLongitude: draft.locationLongitude
+        )
+        modelContext.insert(todo)
+
+        for attachmentDraft in draft.attachments {
+            let attachment = TodoAttachment(draft: attachmentDraft, todo: todo)
+            modelContext.insert(attachment)
+            todo.attachments = (todo.attachments ?? []) + [attachment]
+        }
+
+        for reminderDraft in draft.reminders {
+            let reminder = Reminder(draft: reminderDraft, todo: todo)
+            modelContext.insert(reminder)
+            todo.reminders = (todo.reminders ?? []) + [reminder]
+        }
+
+        return todo
+    }
+
+    private func expandedTodoDrafts(from draft: TodoDraft) -> [TodoDraft] {
+        guard draft.routine.isEnabled, draft.scheduledStartAt != nil else {
+            return [copyDraftForInsertion(draft)]
+        }
+
+        let calendar = Calendar.current
+        let count = draft.routine.normalizedOccurrenceCount
+        let occurrenceDrafts = (0..<count).compactMap { index in
+            shiftedDraft(draft, occurrenceIndex: index, calendar: calendar)
+        }
+
+        return occurrenceDrafts.isEmpty ? [copyDraftForInsertion(draft)] : occurrenceDrafts
+    }
+
+    private func shiftedDraft(
+        _ draft: TodoDraft,
+        occurrenceIndex: Int,
+        calendar: Calendar
+    ) -> TodoDraft? {
+        guard let (component, value) = routineDateOffset(
+            for: draft.routine,
+            occurrenceIndex: occurrenceIndex
+        ) else {
+            return occurrenceIndex == 0 ? copyDraftForInsertion(draft) : nil
+        }
+
+        let scheduledStartAt = shiftedDate(
+            draft.scheduledStartAt,
+            component: component,
+            value: value,
+            calendar: calendar
+        )
+        let scheduledEndAt = shiftedDate(
+            draft.scheduledEndAt,
+            component: component,
+            value: value,
+            calendar: calendar
+        )
+        let reminders = draft.reminders.map { reminder in
+            ReminderDraft(
+                fireDate: shiftedDate(
+                    reminder.fireDate,
+                    component: component,
+                    value: value,
+                    calendar: calendar
+                ) ?? reminder.fireDate,
+                repeatRule: reminder.repeatRule,
+                deliveryStyle: reminder.deliveryStyle,
+                isEnabled: reminder.isEnabled
+            )
+        }
+
+        return copyDraftForInsertion(
+            draft,
+            scheduledStartAt: scheduledStartAt,
+            scheduledEndAt: scheduledEndAt,
+            reminders: reminders
+        )
+    }
+
+    private func routineDateOffset(
+        for routine: TodoRoutineDraft,
+        occurrenceIndex: Int
+    ) -> (Calendar.Component, Int)? {
+        switch routine.frequency {
+        case .none:
+            nil
+        case .daily, .weekly, .monthly, .yearly:
+            routine.frequency.dateComponent.map { ($0, occurrenceIndex) }
+        case .custom:
+            (
+                routine.customUnit.dateComponent,
+                occurrenceIndex * routine.normalizedCustomInterval
+            )
+        }
+    }
+
+    private func shiftedDate(
+        _ date: Date?,
+        component: Calendar.Component,
+        value: Int,
+        calendar: Calendar
+    ) -> Date? {
+        guard let date else {
+            return nil
+        }
+
+        guard value != 0 else {
+            return date
+        }
+
+        return calendar.date(byAdding: component, value: value, to: date)
+    }
+
+    private func copyDraftForInsertion(
+        _ draft: TodoDraft,
+        scheduledStartAt: Date? = nil,
+        scheduledEndAt: Date? = nil,
+        reminders: [ReminderDraft]? = nil
+    ) -> TodoDraft {
+        TodoDraft(
+            title: draft.title,
+            content: draft.content,
+            isCompleted: draft.isCompleted,
+            scheduleMode: draft.scheduleMode,
+            priority: draft.priority,
+            autoDeletePeriod: draft.autoDeletePeriod,
+            scheduledStartAt: scheduledStartAt ?? draft.scheduledStartAt,
+            scheduledEndAt: scheduledEndAt ?? draft.scheduledEndAt,
+            locationLatitude: draft.locationLatitude,
+            locationLongitude: draft.locationLongitude,
+            attachments: draft.attachments.map { attachment in
+                TodoAttachmentDraft(
+                    kind: attachment.kind,
+                    contentType: attachment.contentType,
+                    fileName: attachment.fileName,
+                    data: attachment.data,
+                    createdAt: attachment.createdAt
+                )
+            },
+            reminders: reminders ?? draft.reminders.map { reminder in
+                ReminderDraft(
+                    fireDate: reminder.fireDate,
+                    repeatRule: reminder.repeatRule,
+                    deliveryStyle: reminder.deliveryStyle,
+                    isEnabled: reminder.isEnabled
+                )
+            }
+        )
     }
 
     private func updateTodo(_ todo: TodoItem, draft: TodoDraft) {

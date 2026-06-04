@@ -12,6 +12,7 @@ struct TodoEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.appLanguage) private var appLanguage
     let title: String
+    let allowsRoutineBulkCreation: Bool
     let onSave: (TodoDraft) -> Void
 
     @State private var todoTitle: String
@@ -30,6 +31,10 @@ struct TodoEditorSheet: View {
     @State private var locationLongitude: Double?
     @State private var isPresentingLocationPicker = false
     @State private var reminders: [ReminderDraft]
+    @State private var routineFrequency: TodoRoutineFrequency
+    @State private var routineOccurrenceCount: Int
+    @State private var routineCustomInterval: Int
+    @State private var routineCustomUnit: TodoRoutineIntervalUnit
     @State private var isPresentingNewReminderSheet = false
     @State private var selectedReminder: ReminderDraft?
     @State private var selectedPhotoPreview: PhotoAttachmentPreview?
@@ -38,9 +43,11 @@ struct TodoEditorSheet: View {
     init(
         title: String,
         initialDraft: TodoDraft = TodoDraft(),
+        allowsRoutineBulkCreation: Bool = true,
         onSave: @escaping (TodoDraft) -> Void
     ) {
         self.title = title
+        self.allowsRoutineBulkCreation = allowsRoutineBulkCreation
         self.onSave = onSave
         _todoTitle = State(initialValue: initialDraft.title)
         _content = State(initialValue: initialDraft.content)
@@ -55,6 +62,10 @@ struct TodoEditorSheet: View {
         _locationLatitude = State(initialValue: initialDraft.locationLatitude)
         _locationLongitude = State(initialValue: initialDraft.locationLongitude)
         _reminders = State(initialValue: initialDraft.reminders)
+        _routineFrequency = State(initialValue: initialDraft.routine.frequency)
+        _routineOccurrenceCount = State(initialValue: initialDraft.routine.occurrenceCount)
+        _routineCustomInterval = State(initialValue: initialDraft.routine.customInterval)
+        _routineCustomUnit = State(initialValue: initialDraft.routine.customUnit)
     }
 
     private var trimmedTitle: String {
@@ -82,6 +93,15 @@ struct TodoEditorSheet: View {
 
     private var normalizedScheduleEndAt: Date {
         max(scheduledEndAt, scheduledStartAt)
+    }
+
+    private var routineDraft: TodoRoutineDraft {
+        TodoRoutineDraft(
+            frequency: isScheduleEnabled && allowsRoutineBulkCreation ? routineFrequency : .none,
+            occurrenceCount: routineOccurrenceCount,
+            customInterval: routineCustomInterval,
+            customUnit: routineCustomUnit
+        )
     }
 
     var body: some View {
@@ -145,6 +165,51 @@ struct TodoEditorSheet: View {
                                 in: scheduledStartAt...,
                                 displayedComponents: [.date, .hourAndMinute]
                             )
+                        }
+                    }
+                }
+
+
+                if isScheduleEnabled && allowsRoutineBulkCreation {
+                    Section {
+                        Picker(appLanguage.text(korean: "반복 주기", english: "Routine"), selection: $routineFrequency) {
+                            ForEach(TodoRoutineFrequency.allCases) { frequency in
+                                Text(frequency.title(in: appLanguage)).tag(frequency)
+                            }
+                        }
+                        .pickerStyle(.menu)
+
+                        if routineFrequency == .custom {
+                            Stepper(
+                                value: $routineCustomInterval,
+                                in: 1...365
+                            ) {
+                                Text(appLanguage.text(korean: "간격: \(routineCustomInterval)", english: "Interval: \(routineCustomInterval)"))
+                            }
+
+                            Picker(appLanguage.text(korean: "단위", english: "Unit"), selection: $routineCustomUnit) {
+                                ForEach(TodoRoutineIntervalUnit.allCases) { unit in
+                                    Text(unit.title(in: appLanguage)).tag(unit)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                        }
+
+                        if routineFrequency != .none {
+                            Stepper(
+                                value: $routineOccurrenceCount,
+                                in: 2...365
+                            ) {
+                                Text(appLanguage.text(korean: "생성 개수: \(routineOccurrenceCount)개", english: "Todos to create: \(routineOccurrenceCount)"))
+                            }
+                        }
+                    } header: {
+                        Text(appLanguage.text(korean: "루틴", english: "Routine"))
+                    } footer: {
+                        if routineFrequency == .none {
+                            Text(appLanguage.text(korean: "반복 없음이면 현재 설정한 날짜에 할 일 1개만 생성됩니다.", english: "With no routine, only one todo is created for the selected date."))
+                        } else {
+                            Text(appLanguage.text(korean: "선택한 시작 날짜부터 반복 주기에 맞춰 여러 할 일을 자동으로 생성합니다.", english: "Creates multiple todos from the selected start date using the selected repeat interval."))
                         }
                     }
                 }
@@ -251,7 +316,8 @@ struct TodoEditorSheet: View {
                                 locationLatitude: locationLatitude,
                                 locationLongitude: locationLongitude,
                                 attachments: attachments.sorted { $0.createdAt < $1.createdAt },
-                                reminders: reminders.sorted { $0.fireDate < $1.fireDate }
+                                reminders: reminders.sorted { $0.fireDate < $1.fireDate },
+                                routine: routineDraft
                             )
                         )
                         dismiss()
@@ -282,6 +348,11 @@ struct TodoEditorSheet: View {
                     coordinate in
                     locationLatitude = coordinate.latitude
                     locationLongitude = coordinate.longitude
+                }
+            }
+            .onChange(of: isScheduleEnabled) { _, newValue in
+                if !newValue {
+                    routineFrequency = .none
                 }
             }
             .onChange(of: selectedMediaItems) { _, newItems in
