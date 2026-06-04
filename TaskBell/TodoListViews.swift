@@ -100,7 +100,8 @@ struct DatedTodoListView: View {
         .sheet(item: $editingTodo) { todo in
             TodoEditorSheet(
                 title: appLanguage.text(korean: "할 일 수정", english: "Edit Todo"),
-                initialDraft: TodoDraft(todo: todo)
+                initialDraft: TodoDraft(todo: todo),
+                allowsRoutineBulkCreation: false
             ) { draft in
                 onUpdateTodo(todo, draft)
             }
@@ -373,7 +374,8 @@ struct SelectedDayTodoSheet: View {
             .sheet(item: $editingTodo) { todo in
                 TodoEditorSheet(
                     title: appLanguage.text(korean: "할 일 수정", english: "Edit Todo"),
-                    initialDraft: TodoDraft(todo: todo)
+                    initialDraft: TodoDraft(todo: todo),
+                    allowsRoutineBulkCreation: false
                 ) { draft in
                     onUpdateTodo(todo, draft)
                 }
@@ -655,7 +657,8 @@ struct TodoDetailSheet: View {
             .sheet(isPresented: $isPresentingEditor) {
                 TodoEditorSheet(
                     title: appLanguage.text(korean: "할 일 수정", english: "Edit Todo"),
-                    initialDraft: TodoDraft(todo: todo)
+                    initialDraft: TodoDraft(todo: todo),
+                    allowsRoutineBulkCreation: false
                 ) { draft in
                     onUpdateTodo(draft)
                 }
