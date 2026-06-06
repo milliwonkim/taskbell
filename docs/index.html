@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TaskBell</title>
+    <meta
+      name="description"
+      content="TaskBell은 할 일, 캘린더, 기념일, 알림을 한곳에서 관리하는 iOS 앱입니다."
+    />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f5f7fb;
+        --card: #ffffff;
+        --text: #111827;
+        --muted: #6b7280;
+        --accent: #2563eb;
+        --border: #e5e7eb;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f172a;
+          --card: #111827;
+          --text: #f9fafb;
+          --muted: #9ca3af;
+          --accent: #60a5fa;
+          --border: #1f2937;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+      }
+
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 48px 20px 64px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 32px;
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 2.4rem;
+      }
+
+      .subtitle {
+        margin: 0 0 24px;
+        color: var(--muted);
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+
+      li + li {
+        margin-top: 8px;
+      }
+
+      .links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+      }
+
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      a.button {
+        display: inline-block;
+        padding: 10px 16px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: transparent;
+      }
+
+      footer {
+        margin-top: 24px;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="card">
+        <h1>TaskBell</h1>
+        <p class="subtitle">할 일, 캘린더, 기념일, 알림을 한곳에서 관리하는 iOS 앱</p>
+        <ul>
+          <li>월간 캘린더와 날짜별 할 일 관리</li>
+          <li>우선순위 보드와 반복 일정</li>
+          <li>기념일 추적 및 위젯 지원</li>
+          <li>iCloud 동기화</li>
+        </ul>
+        <div class="links">
+          <a class="button" href="app-ads.txt">app-ads.txt</a>
+          <a class="button" href="https://github.com/milliwonkim/taskbell">GitHub</a>
+        </div>
+        <footer>© TaskBell</footer>
+      </section>
+    </main>
+  </body>
+</html>
