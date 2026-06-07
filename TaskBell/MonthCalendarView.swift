@@ -3,13 +3,17 @@
 //  TaskBell
 //
 
+import SwiftData
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct MonthCalendarView: View {
     @Environment(\.appLanguage) private var appLanguage
     @Binding var selectedDate: Date
     @Binding var displayedMonth: Date
+    @Binding var dropTargetDate: Date?
     let todos: [TodoItem]
+    let onMoveTodoToDate: (TodoItem, Date) -> Void
     let onSelectDate: (Date) -> Void
 
     private let calendar = Calendar.current
@@ -88,8 +92,12 @@ struct MonthCalendarView: View {
                             day: day,
                             isSelected: calendar.isDate(day.date, inSameDayAs: selectedDate),
                             isToday: calendar.isDateInToday(day.date),
+                            isDropTarget: dropTargetBinding(for: day.date),
                             todos: dayTodos,
-                            minHeight: dayHeight
+                            minHeight: dayHeight,
+                            onDrop: { providers in
+                                handleDrop(from: providers, on: day.date)
+                            }
                         ) {
                             onSelectDate(day.date)
                         }
@@ -180,6 +188,61 @@ struct MonthCalendarView: View {
     private func todosForDay(_ date: Date) -> [TodoItem] {
         todos.filter { $0.isScheduled(on: date, calendar: calendar) }
     }
+
+    private func isDropTarget(_ date: Date) -> Bool {
+        guard let dropTargetDate else {
+            return false
+        }
+
+        return calendar.isDate(dropTargetDate, inSameDayAs: date)
+    }
+
+    private func dropTargetBinding(for date: Date) -> Binding<Bool> {
+        Binding(
+            get: { isDropTarget(date) },
+            set: { isTargeted in
+                dropTargetDate = isTargeted ? calendar.startOfDay(for: date) : nil
+            }
+        )
+    }
+
+    private func handleDrop(from providers: [NSItemProvider], on date: Date) -> Bool {
+        guard
+            let provider = providers.first(where: {
+                $0.hasItemConformingToTypeIdentifier(UTType.plainText.identifier)
+            })
+        else {
+            return false
+        }
+
+        provider.loadItem(
+            forTypeIdentifier: UTType.plainText.identifier,
+            options: nil
+        ) { item, _ in
+            let draggedID: String?
+            if let data = item as? Data {
+                draggedID = String(data: data, encoding: .utf8)
+            } else {
+                draggedID = item as? String
+            }
+
+            guard
+                let draggedID,
+                let draggedTodo = todos.first(where: {
+                    String(describing: $0.persistentModelID) == draggedID
+                })
+            else {
+                return
+            }
+
+            Task { @MainActor in
+                onMoveTodoToDate(draggedTodo, calendar.startOfDay(for: date))
+                dropTargetDate = nil
+            }
+        }
+
+        return true
+    }
 }
 
 private struct CalendarDay: Identifiable {
@@ -194,8 +257,10 @@ private struct CalendarDayButton: View {
     let day: CalendarDay
     let isSelected: Bool
     let isToday: Bool
+    let isDropTarget: Binding<Bool>
     let todos: [TodoItem]
     let minHeight: CGFloat
+    let onDrop: ([NSItemProvider]) -> Bool
     let action: () -> Void
 
     private var dayNumber: String {
@@ -225,14 +290,24 @@ private struct CalendarDayButton: View {
         .padding(.top, 6)
         .padding(.horizontal, 3)
         .frame(maxWidth: .infinity, minHeight: minHeight, alignment: .top)
+        .background(isDropTarget.wrappedValue ? Color.accentColor.opacity(0.14) : Color.clear)
         .opacity(day.isCurrentMonth ? 1 : 0.48)
         .overlay(alignment: .bottom) {
             Rectangle()
                 .fill(Color(.separator).opacity(0.35))
                 .frame(height: 0.5)
         }
+        .overlay {
+            if isDropTarget.wrappedValue {
+                Rectangle()
+                    .strokeBorder(Color.accentColor, lineWidth: 2)
+            }
+        }
         .contentShape(Rectangle())
         .onTapGesture(perform: action)
+        .onDrop(of: [.plainText], isTargeted: isDropTarget) { providers in
+            onDrop(providers)
+        }
         .accessibilityLabel(accessibilityLabel)
         .accessibilityAddTraits(.isButton)
         .accessibilityAction {

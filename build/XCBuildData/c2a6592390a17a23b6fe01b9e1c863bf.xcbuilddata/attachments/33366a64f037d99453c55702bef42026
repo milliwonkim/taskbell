@@ -1,0 +1,19 @@
+{
+  "" : {
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/build/Pods.build/Debug-iphonesimulator/Google-Mobile-Ads-SDK.build/Objects-normal/arm64/Google-Mobile-Ads-SDK-primary.dia",
+    "emit-module-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/build/Pods.build/Debug-iphonesimulator/Google-Mobile-Ads-SDK.build/Objects-normal/arm64/Google-Mobile-Ads-SDK-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/build/Pods.build/Debug-iphonesimulator/Google-Mobile-Ads-SDK.build/Objects-normal/arm64/Google-Mobile-Ads-SDK-primary-emit-module.dia",
+    "pch" : "/Users/kimkiwon/Desktop/TaskBell/build/Pods.build/Debug-iphonesimulator/Google-Mobile-Ads-SDK.build/Objects-normal/arm64/Google-Mobile-Ads-SDK-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/build/Pods.build/Debug-iphonesimulator/Google-Mobile-Ads-SDK.build/Objects-normal/arm64/Google-Mobile-Ads-SDK-primary.swiftdeps"
+  },
+  "/Users/kimkiwon/Desktop/TaskBell/Pods/Google-Mobile-Ads-SDK/Sources/GoogleMobileAdsPlaceholder.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/build/Pods.build/Debug-iphonesimulator/Google-Mobile-Ads-SDK.build/Objects-normal/arm64/GoogleMobileAdsPlaceholder.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/build/Pods.build/Debug-iphonesimulator/Google-Mobile-Ads-SDK.build/Objects-normal/arm64/GoogleMobileAdsPlaceholder.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/build/Pods.build/Debug-iphonesimulator/Google-Mobile-Ads-SDK.build/Objects-normal/arm64/GoogleMobileAdsPlaceholder.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/Google-Mobile-Ads-SDK.build/Objects-normal/arm64/GoogleMobileAdsPlaceholder.o",
+    "llvm-bc" : "/Users/kimkiwon/Desktop/TaskBell/build/Pods.build/Debug-iphonesimulator/Google-Mobile-Ads-SDK.build/Objects-normal/arm64/GoogleMobileAdsPlaceholder.bc",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/build/Pods.build/Debug-iphonesimulator/Google-Mobile-Ads-SDK.build/Objects-normal/arm64/GoogleMobileAdsPlaceholder.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/build/Pods.build/Debug-iphonesimulator/Google-Mobile-Ads-SDK.build/Objects-normal/arm64/GoogleMobileAdsPlaceholder.swiftdeps",
+    "swiftmodule" : "/Users/kimkiwon/Desktop/TaskBell/build/Pods.build/Debug-iphonesimulator/Google-Mobile-Ads-SDK.build/Objects-normal/arm64/GoogleMobileAdsPlaceholder~partial.swiftmodule"
+  }
+}

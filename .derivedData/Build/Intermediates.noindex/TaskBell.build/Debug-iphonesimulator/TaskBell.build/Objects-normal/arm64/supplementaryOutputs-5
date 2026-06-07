@@ -1,0 +1,23 @@
+{
+  "/Users/kimkiwon/Desktop/TaskBell/TaskBell/ReminderViews.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/ReminderViews.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/ReminderViews.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/ReminderViews.dia",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/ReminderViews.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/ReminderViews.swiftdeps"
+  },
+  "/Users/kimkiwon/Desktop/TaskBell/TaskBell/RichTodoContentViews.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/RichTodoContentViews.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/RichTodoContentViews.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/RichTodoContentViews.dia",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/RichTodoContentViews.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/RichTodoContentViews.swiftdeps"
+  },
+  "/Users/kimkiwon/Desktop/TaskBell/TaskBell/SettingsView.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/SettingsView.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/SettingsView.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/SettingsView.dia",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/SettingsView.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/SettingsView.swiftdeps"
+  }
+}

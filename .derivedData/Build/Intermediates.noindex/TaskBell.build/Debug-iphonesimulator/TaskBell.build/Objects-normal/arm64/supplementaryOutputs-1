@@ -1,0 +1,23 @@
+{
+  "/Users/kimkiwon/Desktop/TaskBell/TaskBell/AdMobBannerView.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AdMobBannerView.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AdMobBannerView.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AdMobBannerView.dia",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AdMobBannerView.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AdMobBannerView.swiftdeps"
+  },
+  "/Users/kimkiwon/Desktop/TaskBell/TaskBell/AdMobConfiguration.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AdMobConfiguration.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AdMobConfiguration.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AdMobConfiguration.dia",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AdMobConfiguration.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AdMobConfiguration.swiftdeps"
+  },
+  "/Users/kimkiwon/Desktop/TaskBell/TaskBell/AnniversaryViews.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AnniversaryViews.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AnniversaryViews.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AnniversaryViews.dia",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AnniversaryViews.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AnniversaryViews.swiftdeps"
+  }
+}

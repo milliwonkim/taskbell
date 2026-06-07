@@ -6,6 +6,18 @@
 import SwiftUI
 import CloudKit
 
+private enum AppLinks {
+    static let websiteBaseURL = URL(string: "https://taskbell-coral.vercel.app")!
+
+    static var privacyPolicyURL: URL {
+        websiteBaseURL.appending(path: "privacy.html")
+    }
+
+    static var supportURL: URL {
+        websiteBaseURL.appending(path: "support.html")
+    }
+}
+
 struct SettingsView: View {
     @Environment(\.appLanguage) private var appLanguage
     @Binding var appearance: AppAppearance
@@ -83,6 +95,18 @@ struct SettingsView: View {
                 Text("iCloud")
             } footer: {
                 Text(appLanguage.text(korean: "할 일과 미리알림은 사용자의 개인 iCloud 데이터베이스에 저장되어 같은 Apple 계정의 기기와 동기화됩니다.", english: "Todos and reminders are saved in your private iCloud database and sync across devices using the same Apple account."))
+            }
+
+            Section {
+                Link(destination: AppLinks.privacyPolicyURL) {
+                    Label(appLanguage.text(korean: "개인정보 처리방침", english: "Privacy Policy"), systemImage: "hand.raised")
+                }
+
+                Link(destination: AppLinks.supportURL) {
+                    Label(appLanguage.text(korean: "고객 지원", english: "Support"), systemImage: "questionmark.circle")
+                }
+            } header: {
+                Text(appLanguage.text(korean: "앱 정보", english: "App Information"))
             }
         }
         .navigationTitle(appLanguage.text(korean: "설정", english: "Settings"))

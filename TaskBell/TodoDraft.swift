@@ -19,6 +19,7 @@ struct TodoDraft {
     var attachments: [TodoAttachmentDraft]
     var reminders: [ReminderDraft]
     var routine: TodoRoutineDraft
+    var routineSeriesID: UUID?
 
     init(
         title: String = "",
@@ -33,7 +34,8 @@ struct TodoDraft {
         locationLongitude: Double? = nil,
         attachments: [TodoAttachmentDraft] = [],
         reminders: [ReminderDraft] = [],
-        routine: TodoRoutineDraft = TodoRoutineDraft()
+        routine: TodoRoutineDraft = TodoRoutineDraft(),
+        routineSeriesID: UUID? = nil
     ) {
         self.title = title
         self.content = content
@@ -48,6 +50,7 @@ struct TodoDraft {
         self.attachments = attachments
         self.reminders = reminders
         self.routine = routine
+        self.routineSeriesID = routineSeriesID
     }
 
     init(todo: TodoItem) {
@@ -78,32 +81,179 @@ struct TodoDraft {
 
 struct TodoRoutineDraft: Equatable {
     var frequency: TodoRoutineFrequency
-    var occurrenceCount: Int
-    var customInterval: Int
-    var customUnit: TodoRoutineIntervalUnit
+    var selectedWeekdays: Set<TodoRoutineWeekday>
 
     init(
         frequency: TodoRoutineFrequency = .none,
-        occurrenceCount: Int = 7,
-        customInterval: Int = 2,
-        customUnit: TodoRoutineIntervalUnit = .day
+        selectedWeekdays: Set<TodoRoutineWeekday> = []
     ) {
         self.frequency = frequency
-        self.occurrenceCount = occurrenceCount
-        self.customInterval = customInterval
-        self.customUnit = customUnit
+        self.selectedWeekdays = selectedWeekdays
     }
 
     var isEnabled: Bool {
         frequency != .none
     }
 
-    var normalizedOccurrenceCount: Int {
-        max(1, min(occurrenceCount, 365))
+    var hasValidCustomWeekdays: Bool {
+        frequency != .custom || !selectedWeekdays.isEmpty
     }
 
-    var normalizedCustomInterval: Int {
-        max(1, min(customInterval, 365))
+    func occurrenceDates(
+        startDate: Date,
+        calendar: Calendar = .current
+    ) -> [Date] {
+        switch frequency {
+        case .none:
+            [startDate]
+        case .daily:
+            indexedOccurrenceDates(
+                startDate: startDate,
+                component: .day,
+                count: 365,
+                calendar: calendar
+            )
+        case .weekly:
+            indexedOccurrenceDates(
+                startDate: startDate,
+                component: .weekOfYear,
+                count: 104,
+                calendar: calendar
+            )
+        case .monthly:
+            indexedOccurrenceDates(
+                startDate: startDate,
+                component: .month,
+                count: 24,
+                calendar: calendar
+            )
+        case .yearly:
+            indexedOccurrenceDates(
+                startDate: startDate,
+                component: .year,
+                count: 10,
+                calendar: calendar
+            )
+        case .custom:
+            customWeekdayOccurrenceDates(
+                startDate: startDate,
+                calendar: calendar
+            )
+        }
+    }
+
+    private func indexedOccurrenceDates(
+        startDate: Date,
+        component: Calendar.Component,
+        count: Int,
+        calendar: Calendar
+    ) -> [Date] {
+        (0..<count).compactMap { index in
+            calendar.date(byAdding: component, value: index, to: startDate)
+        }
+    }
+
+    private func customWeekdayOccurrenceDates(
+        startDate: Date,
+        calendar: Calendar
+    ) -> [Date] {
+        guard !selectedWeekdays.isEmpty else {
+            return [startDate]
+        }
+
+        let startOfStart = calendar.startOfDay(for: startDate)
+        let timeComponents = calendar.dateComponents(
+            [.hour, .minute, .second],
+            from: startDate
+        )
+
+        return (0..<365).compactMap { offset -> Date? in
+            guard let day = calendar.date(
+                byAdding: .day,
+                value: offset,
+                to: startOfStart
+            ) else {
+                return nil
+            }
+
+            let weekdayValue = calendar.component(.weekday, from: day)
+            guard let weekday = TodoRoutineWeekday(rawValue: weekdayValue),
+                  selectedWeekdays.contains(weekday) else {
+                return nil
+            }
+
+            var components = calendar.dateComponents(
+                [.year, .month, .day],
+                from: day
+            )
+            components.hour = timeComponents.hour
+            components.minute = timeComponents.minute
+            components.second = timeComponents.second
+            return calendar.date(from: components)
+        }
+    }
+}
+
+enum TodoRoutineWeekday: Int, CaseIterable, Identifiable, Codable, Hashable {
+    case sunday = 1
+    case monday = 2
+    case tuesday = 3
+    case wednesday = 4
+    case thursday = 5
+    case friday = 6
+    case saturday = 7
+
+    var id: Int { rawValue }
+
+    static let displayOrder: [TodoRoutineWeekday] = [
+        .monday,
+        .tuesday,
+        .wednesday,
+        .thursday,
+        .friday,
+        .saturday,
+        .sunday,
+    ]
+
+    func shortTitle(in language: AppLanguage) -> String {
+        switch self {
+        case .sunday:
+            language.text(korean: "일", english: "Sun")
+        case .monday:
+            language.text(korean: "월", english: "Mon")
+        case .tuesday:
+            language.text(korean: "화", english: "Tue")
+        case .wednesday:
+            language.text(korean: "수", english: "Wed")
+        case .thursday:
+            language.text(korean: "목", english: "Thu")
+        case .friday:
+            language.text(korean: "금", english: "Fri")
+        case .saturday:
+            language.text(korean: "토", english: "Sat")
+        }
+    }
+
+    init?(calendarWeekday: Int) {
+        self.init(rawValue: calendarWeekday)
+    }
+}
+
+extension Set where Element == TodoRoutineWeekday {
+    var encodedRawValue: String {
+        map(\.rawValue)
+            .sorted()
+            .map(String.init)
+            .joined(separator: ",")
+    }
+
+    init(encodedRawValue: String) {
+        self = Set(
+            encodedRawValue
+                .split(separator: ",")
+                .compactMap { Int($0) }
+                .compactMap(TodoRoutineWeekday.init(rawValue:))
+        )
     }
 }
 
@@ -145,41 +295,6 @@ enum TodoRoutineFrequency: String, CaseIterable, Identifiable, Codable {
         case .monthly:
             .month
         case .yearly:
-            .year
-        }
-    }
-}
-
-enum TodoRoutineIntervalUnit: String, CaseIterable, Identifiable, Codable {
-    case day
-    case week
-    case month
-    case year
-
-    var id: Self { self }
-
-    func title(in language: AppLanguage) -> String {
-        switch self {
-        case .day:
-            language.text(korean: "일", english: "Days")
-        case .week:
-            language.text(korean: "주", english: "Weeks")
-        case .month:
-            language.text(korean: "개월", english: "Months")
-        case .year:
-            language.text(korean: "년", english: "Years")
-        }
-    }
-
-    var dateComponent: Calendar.Component {
-        switch self {
-        case .day:
-            .day
-        case .week:
-            .weekOfYear
-        case .month:
-            .month
-        case .year:
             .year
         }
     }

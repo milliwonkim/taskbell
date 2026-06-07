@@ -32,9 +32,7 @@ struct TodoEditorSheet: View {
     @State private var isPresentingLocationPicker = false
     @State private var reminders: [ReminderDraft]
     @State private var routineFrequency: TodoRoutineFrequency
-    @State private var routineOccurrenceCount: Int
-    @State private var routineCustomInterval: Int
-    @State private var routineCustomUnit: TodoRoutineIntervalUnit
+    @State private var routineSelectedWeekdays: Set<TodoRoutineWeekday>
     @State private var isPresentingNewReminderSheet = false
     @State private var selectedReminder: ReminderDraft?
     @State private var selectedPhotoPreview: PhotoAttachmentPreview?
@@ -63,9 +61,22 @@ struct TodoEditorSheet: View {
         _locationLongitude = State(initialValue: initialDraft.locationLongitude)
         _reminders = State(initialValue: initialDraft.reminders)
         _routineFrequency = State(initialValue: initialDraft.routine.frequency)
-        _routineOccurrenceCount = State(initialValue: initialDraft.routine.occurrenceCount)
-        _routineCustomInterval = State(initialValue: initialDraft.routine.customInterval)
-        _routineCustomUnit = State(initialValue: initialDraft.routine.customUnit)
+        _routineSelectedWeekdays = State(initialValue: initialDraft.routine.selectedWeekdays)
+    }
+
+    private var canSaveTodo: Bool {
+        guard !trimmedTitle.isEmpty else {
+            return false
+        }
+
+        if isScheduleEnabled,
+           allowsRoutineBulkCreation,
+           routineFrequency == .custom,
+           routineSelectedWeekdays.isEmpty {
+            return false
+        }
+
+        return true
     }
 
     private var trimmedTitle: String {
@@ -98,9 +109,7 @@ struct TodoEditorSheet: View {
     private var routineDraft: TodoRoutineDraft {
         TodoRoutineDraft(
             frequency: isScheduleEnabled && allowsRoutineBulkCreation ? routineFrequency : .none,
-            occurrenceCount: routineOccurrenceCount,
-            customInterval: routineCustomInterval,
-            customUnit: routineCustomUnit
+            selectedWeekdays: routineSelectedWeekdays
         )
     }
 
@@ -180,36 +189,20 @@ struct TodoEditorSheet: View {
                         .pickerStyle(.menu)
 
                         if routineFrequency == .custom {
-                            Stepper(
-                                value: $routineCustomInterval,
-                                in: 1...365
-                            ) {
-                                Text(appLanguage.text(korean: "간격: \(routineCustomInterval)", english: "Interval: \(routineCustomInterval)"))
-                            }
-
-                            Picker(appLanguage.text(korean: "단위", english: "Unit"), selection: $routineCustomUnit) {
-                                ForEach(TodoRoutineIntervalUnit.allCases) { unit in
-                                    Text(unit.title(in: appLanguage)).tag(unit)
-                                }
-                            }
-                            .pickerStyle(.segmented)
+                            TodoRoutineWeekdayPicker(
+                                selectedWeekdays: $routineSelectedWeekdays
+                            )
                         }
 
-                        if routineFrequency != .none {
-                            Stepper(
-                                value: $routineOccurrenceCount,
-                                in: 2...365
-                            ) {
-                                Text(appLanguage.text(korean: "생성 개수: \(routineOccurrenceCount)개", english: "Todos to create: \(routineOccurrenceCount)"))
-                            }
-                        }
                     } header: {
-                        Text(appLanguage.text(korean: "루틴", english: "Routine"))
+                        Text(appLanguage.text(korean: "반복 주기", english: "Repeat"))
                     } footer: {
                         if routineFrequency == .none {
-                            Text(appLanguage.text(korean: "반복 없음이면 현재 설정한 날짜에 할 일 1개만 생성됩니다.", english: "With no routine, only one todo is created for the selected date."))
+                            Text(appLanguage.text(korean: "반복 없음이면 현재 설정한 날짜에 할 일 1개만 등록됩니다.", english: "With no repeat, only one todo is registered for the selected date."))
+                        } else if routineFrequency == .custom {
+                            Text(appLanguage.text(korean: "선택한 요일마다 1년간 할 일이 자동으로 등록됩니다.", english: "Registers a todo on each selected weekday for one year."))
                         } else {
-                            Text(appLanguage.text(korean: "선택한 시작 날짜부터 반복 주기에 맞춰 여러 할 일을 자동으로 생성합니다.", english: "Creates multiple todos from the selected start date using the selected repeat interval."))
+                            Text(appLanguage.text(korean: "선택한 시작 날짜부터 반복 주기에 맞춰 각 날짜에 할 일이 자동으로 등록됩니다.", english: "Registers a todo on each date from the selected start date using the repeat interval."))
                         }
                     }
                 }
@@ -322,7 +315,7 @@ struct TodoEditorSheet: View {
                         )
                         dismiss()
                     }
-                    .disabled(trimmedTitle.isEmpty)
+                    .disabled(!canSaveTodo)
                 }
             }
             .sheet(isPresented: $isPresentingNewReminderSheet) {
@@ -353,6 +346,11 @@ struct TodoEditorSheet: View {
             .onChange(of: isScheduleEnabled) { _, newValue in
                 if !newValue {
                     routineFrequency = .none
+                }
+            }
+            .onChange(of: routineFrequency) { _, newValue in
+                if newValue == .custom, routineSelectedWeekdays.isEmpty {
+                    applyDefaultCustomWeekday()
                 }
             }
             .onChange(of: selectedMediaItems) { _, newItems in
@@ -416,6 +414,64 @@ struct TodoEditorSheet: View {
         let sorted = sortedReminders
         let idsToDelete = offsets.map { sorted[$0].id }
         reminders.removeAll { idsToDelete.contains($0.id) }
+    }
+
+    private func applyDefaultCustomWeekday() {
+        let weekday = Calendar.current.component(.weekday, from: scheduledStartAt)
+        if let defaultWeekday = TodoRoutineWeekday(calendarWeekday: weekday) {
+            routineSelectedWeekdays = [defaultWeekday]
+        }
+    }
+}
+
+private struct TodoRoutineWeekdayPicker: View {
+    @Environment(\.appLanguage) private var appLanguage
+    @Binding var selectedWeekdays: Set<TodoRoutineWeekday>
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(appLanguage.text(korean: "요일", english: "Weekdays"))
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 8) {
+                ForEach(TodoRoutineWeekday.displayOrder) { weekday in
+                    Button {
+                        toggle(weekday)
+                    } label: {
+                        Text(weekday.shortTitle(in: appLanguage))
+                            .font(.subheadline.weight(.semibold))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(
+                                selectedWeekdays.contains(weekday)
+                                    ? Color.accentColor
+                                    : Color(.secondarySystemFill),
+                                in: RoundedRectangle(cornerRadius: 10)
+                            )
+                            .foregroundStyle(
+                                selectedWeekdays.contains(weekday)
+                                    ? Color.white
+                                    : Color.primary
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(weekday.shortTitle(in: appLanguage))
+                    .accessibilityAddTraits(
+                        selectedWeekdays.contains(weekday) ? .isSelected : []
+                    )
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func toggle(_ weekday: TodoRoutineWeekday) {
+        if selectedWeekdays.contains(weekday) {
+            selectedWeekdays.remove(weekday)
+        } else {
+            selectedWeekdays.insert(weekday)
+        }
     }
 }
 

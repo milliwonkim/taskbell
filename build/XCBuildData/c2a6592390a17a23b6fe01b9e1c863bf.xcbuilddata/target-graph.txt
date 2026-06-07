@@ -1,0 +1,11 @@
+Target dependency graph (5 targets)
+Target 'Pods-TaskBell' in project 'Pods'
+➜ Explicit dependency on target 'Google-Mobile-Ads-SDK' in project 'Pods'
+➜ Explicit dependency on target 'GoogleUserMessagingPlatform' in project 'Pods'
+Target 'Google-Mobile-Ads-SDK' in project 'Pods'
+➜ Explicit dependency on target 'Google-Mobile-Ads-SDK-GoogleMobileAdsResources' in project 'Pods'
+➜ Explicit dependency on target 'GoogleUserMessagingPlatform' in project 'Pods'
+Target 'GoogleUserMessagingPlatform' in project 'Pods'
+➜ Explicit dependency on target 'GoogleUserMessagingPlatform-UserMessagingPlatformResources' in project 'Pods'
+Target 'GoogleUserMessagingPlatform-UserMessagingPlatformResources' in project 'Pods' (no dependencies)
+Target 'Google-Mobile-Ads-SDK-GoogleMobileAdsResources' in project 'Pods' (no dependencies)

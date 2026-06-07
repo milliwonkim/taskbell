@@ -83,6 +83,47 @@ extension TodoItem {
         }
     }
 
+    func isScheduleElapsed(
+        forSectionDate sectionDate: Date,
+        calendar: Calendar,
+        relativeTo now: Date = .now
+    ) -> Bool {
+        guard !isCompleted else {
+            return false
+        }
+
+        let todayStart = calendar.startOfDay(for: now)
+        let sectionDayStart = calendar.startOfDay(for: sectionDate)
+
+        return sectionDayStart < todayStart
+    }
+
+    func isScheduleElapsed(
+        calendar: Calendar,
+        relativeTo now: Date = .now
+    ) -> Bool {
+        guard !isCompleted else {
+            return false
+        }
+
+        guard scheduleMode != .none, let start = scheduledStartAt else {
+            return false
+        }
+
+        let todayStart = calendar.startOfDay(for: now)
+
+        switch scheduleMode {
+        case .none:
+            return false
+        case .singleDay:
+            return calendar.startOfDay(for: start) < todayStart
+        case .dateRange:
+            let end = scheduledEndAt ?? start
+            let finalDay = calendar.startOfDay(for: max(start, end))
+            return finalDay < todayStart
+        }
+    }
+
     func scheduleSummary(in language: AppLanguage) -> String? {
         guard let start = scheduledStartAt else {
             return nil

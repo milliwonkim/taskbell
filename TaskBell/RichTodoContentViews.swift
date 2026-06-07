@@ -186,15 +186,23 @@ struct RichTodoContentView: View {
                 .foregroundStyle(compact ? .secondary : .primary)
                 .lineLimit(compact ? 2 : nil)
         case .checkbox(let isChecked):
-            HStack(alignment: .top, spacing: compact ? 6 : 7) {
+            HStack(alignment: .top, spacing: compact ? 4 : 7) {
                 Button {
                     onToggleCheckbox?(block.id)
                 } label: {
-                    Image(systemName: isChecked ? "checkmark.square.fill" : "square")
-                        .foregroundStyle(isChecked ? .green : .secondary)
-                        .font(compact ? .title3 : .title2)
-                        .frame(width: compact ? 32 : 44, height: compact ? 32 : 44)
-                        .contentShape(Rectangle())
+                    Group {
+                        if isChecked {
+                            Image(systemName: "checkmark.square.fill")
+                                .symbolRenderingMode(.palette)
+                                .foregroundStyle(.white, .green)
+                        } else {
+                            Image(systemName: "square")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .font(compact ? .body : .title2)
+                    .frame(width: compact ? 28 : 44, height: compact ? 28 : 44)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .disabled(onToggleCheckbox == nil)
@@ -206,7 +214,7 @@ struct RichTodoContentView: View {
                         .foregroundStyle(compact ? .secondary : .primary)
                         .strikethrough(isChecked)
                         .lineLimit(compact ? 1 : nil)
-                        .padding(.top, compact ? 8 : 11)
+                        .padding(.top, compact ? 6 : 11)
                 }
             }
         case .bullet:
@@ -327,14 +335,27 @@ private enum RichTodoContentParser {
     }
 
     static func inlineText(from source: String) -> Text {
-        let segments = inlineSegments(from: source)
-        guard let first = segments.first else {
+        var attributed = AttributedString()
+
+        for segment in inlineSegments(from: source) {
+            var segmentAttributed = AttributedString(segment.text)
+
+            if segment.isBold {
+                segmentAttributed.inlinePresentationIntent = .stronglyEmphasized
+            }
+
+            if segment.isUnderlined {
+                segmentAttributed.underlineStyle = .single
+            }
+
+            attributed.append(segmentAttributed)
+        }
+
+        guard !attributed.characters.isEmpty else {
             return Text("")
         }
 
-        return segments.dropFirst().reduce(text(for: first)) { partial, segment in
-            partial + text(for: segment)
-        }
+        return Text(attributed)
     }
 
     private static func checkboxBlock(from line: String, id: Int) -> RichTodoContentBlock? {
@@ -408,19 +429,6 @@ private enum RichTodoContentParser {
         return segments.isEmpty ? [RichInlineSegment(text: source)] : segments
     }
 
-    private static func text(for segment: RichInlineSegment) -> Text {
-        var text = Text(segment.text)
-
-        if segment.isBold {
-            text = text.bold()
-        }
-
-        if segment.isUnderlined {
-            text = text.underline()
-        }
-
-        return text
-    }
 }
 
 private struct RichInlineSegment {

@@ -1,0 +1,16 @@
+{
+  "source": "/Users/kimkiwon/Desktop/TaskBell/TaskBell/SettingsView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "iCloud",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 95
+        }
+      }
+    ]
+  },
+  "version": 1
+}

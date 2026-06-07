@@ -1,0 +1,16 @@
+{
+  "source": "/Users/kimkiwon/Desktop/TaskBell/TaskBell/TodoListViews.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "+%lld",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 1395
+        }
+      }
+    ]
+  },
+  "version": 1
+}

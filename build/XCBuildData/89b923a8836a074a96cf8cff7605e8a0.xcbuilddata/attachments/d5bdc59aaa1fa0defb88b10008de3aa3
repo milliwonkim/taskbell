@@ -1,0 +1,5 @@
+ extern const unsigned char Pods_TaskBellVersionString[];
+ extern const double Pods_TaskBellVersionNumber;
+
+ const unsigned char Pods_TaskBellVersionString[] __attribute__ ((used)) = "@(#)PROGRAM:Pods_TaskBell  PROJECT:Pods-1" "\n";
+ const double Pods_TaskBellVersionNumber __attribute__ ((used)) = (double)1.;

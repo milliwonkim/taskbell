@@ -22,6 +22,9 @@ final class TodoItem {
     var locationLongitude: Double?
     var createdAt: Date = Date()
     var timelineSortOrder: Double = 0
+    var routineSeriesID: UUID?
+    var routineFrequencyRawValue: String = TodoRoutineFrequency.none.rawValue
+    var routineWeekdaysRawValue: String = ""
 
     @Relationship(deleteRule: .cascade, inverse: \Reminder.todo)
     var reminders: [Reminder]? = []
@@ -42,6 +45,9 @@ final class TodoItem {
         locationLongitude: Double? = nil,
         createdAt: Date = .now,
         timelineSortOrder: Double = 0,
+        routineSeriesID: UUID? = nil,
+        routineFrequency: TodoRoutineFrequency = .none,
+        routineWeekdays: Set<TodoRoutineWeekday> = [],
         reminders: [Reminder] = [],
         attachments: [TodoAttachment] = []
     ) {
@@ -59,6 +65,9 @@ final class TodoItem {
         self.timelineSortOrder = timelineSortOrder == 0
             ? createdAt.timeIntervalSinceReferenceDate
             : timelineSortOrder
+        self.routineSeriesID = routineSeriesID
+        self.routineFrequencyRawValue = routineFrequency.rawValue
+        self.routineWeekdaysRawValue = routineWeekdays.encodedRawValue
         self.reminders = reminders
         self.attachments = attachments
     }
@@ -76,6 +85,20 @@ final class TodoItem {
     var autoDeletePeriod: TodoAutoDeletePeriod {
         get { TodoAutoDeletePeriod(rawValue: autoDeletePeriodRawValue) ?? .oneMonth }
         set { autoDeletePeriodRawValue = newValue.rawValue }
+    }
+
+    var routineFrequency: TodoRoutineFrequency {
+        get { TodoRoutineFrequency(rawValue: routineFrequencyRawValue) ?? .none }
+        set { routineFrequencyRawValue = newValue.rawValue }
+    }
+
+    var routineWeekdays: Set<TodoRoutineWeekday> {
+        get { Set(encodedRawValue: routineWeekdaysRawValue) }
+        set { routineWeekdaysRawValue = newValue.encodedRawValue }
+    }
+
+    var isPartOfRoutineSeries: Bool {
+        routineSeriesID != nil && routineFrequency != .none
     }
 }
 

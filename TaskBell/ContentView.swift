@@ -24,9 +24,13 @@ struct ContentView: View {
     @State private var selectedDate = Date()
     @State private var displayedMonth = Date()
     @State private var isShowingSelectedDayPanel = false
+    @State private var selectedDaySheetDetent: PresentationDetent = .medium
+    @State private var calendarDropTargetDate: Date?
     @State private var isPresentingNewTodoSheet = false
     @State private var expiredTodosPendingDeletion: [TodoItem] = []
     @State private var ignoredExpiredTodoIDs: Set<String> = []
+    @State private var routineDeletionCandidates: [TodoItem] = []
+    @State private var isShowingRoutineDeletionAlert = false
 
     private var selectedDayTodos: [TodoItem] {
         let calendar = Calendar.current
@@ -105,6 +109,20 @@ struct ContentView: View {
         )
     }
 
+    private var routineDeletionAlertTitle: String {
+        appLanguage.text(
+            korean: "반복 할 일 삭제",
+            english: "Delete Repeating Todo"
+        )
+    }
+
+    private var routineDeletionAlertMessage: String {
+        appLanguage.text(
+            korean: "이 날짜를 포함해 이후 반복 일정을 모두 삭제하시겠습니까? 삭제하면 iCloud와 이 기기에서 모두 삭제되며 되돌릴 수 없습니다.",
+            english: "Delete this todo and all later repeats? Deleted todos are removed from iCloud and this device, and cannot be undone."
+        )
+    }
+
     private var calendarNavigationTitle: String {
         appLanguage.formattedMonthYear(for: displayedMonth)
     }
@@ -141,6 +159,101 @@ struct ContentView: View {
     }
 
     var body: some View {
+        VStack(spacing: 0) {
+            AdMobBannerView()
+            tabView
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .preferredColorScheme(appAppearance.colorScheme)
+        .environment(\.locale, Locale(identifier: appLanguage.localeIdentifier))
+        .environment(\.appLanguage, appLanguage)
+        .sheet(isPresented: $isPresentingNewTodoSheet) {
+            TodoEditorSheet(title: appLanguage.text(korean: "새 할 일", english: "New Todo"), initialDraft: newTodoDraft) {
+                draft in
+                addTodo(draft)
+            }
+            .presentationDetents([.large])
+        }
+        .sheet(isPresented: $isShowingSelectedDayPanel) {
+            SelectedDayTodoSheet(
+                selectedDate: selectedDate,
+                todos: selectedDayTodos,
+                initialDraft: selectedDateDraft,
+                onToggleCompletion: toggleTodoCompletion,
+                onToggleContentCheckbox: toggleTodoContentCheckbox,
+                onUpdateTodo: updateTodo,
+                onDelete: { offsets in
+                    deleteTodos(offsets: offsets, from: selectedDayTodos)
+                },
+                onAddTodo: addTodo,
+                onMoveTodo: moveTodo,
+                onTodoDragStarted: {
+                    selectedDaySheetDetent = .medium
+                },
+                onTodoDragExitedSheet: {
+                    isShowingSelectedDayPanel = false
+                }
+            )
+            .presentationDetents([.medium, .large], selection: $selectedDaySheetDetent)
+            .presentationDragIndicator(.visible)
+            .presentationBackgroundInteraction(.enabled(upThrough: .large))
+        }
+        .onChange(of: isShowingSelectedDayPanel) { _, isShowing in
+            if isShowing {
+                selectedDaySheetDetent = .medium
+            }
+        }
+        .task {
+            _ = await NotificationScheduler.requestAuthorization()
+            await NotificationScheduler.rescheduleAll(todos: todos, language: appLanguage)
+            refreshWidgetSnapshot()
+            prepareExpiredTodoDeletionAlert()
+        }
+        .onChange(of: widgetSnapshotSignature) { _, _ in
+            refreshWidgetSnapshot()
+            prepareExpiredTodoDeletionAlert()
+        }
+        .onChange(of: appLanguage) { _, _ in
+            refreshWidgetSnapshot()
+            scheduleAllNotifications()
+        }
+        .alert(
+            expiredTodoAlertTitle,
+            isPresented: Binding(
+                get: { !expiredTodosPendingDeletion.isEmpty },
+                set: { isPresented in
+                    if !isPresented {
+                        ignorePendingExpiredTodos()
+                    }
+                }
+            )
+        ) {
+            Button(appLanguage.text(korean: "나중에", english: "Later"), role: .cancel) {
+                ignorePendingExpiredTodos()
+            }
+            Button(appLanguage.text(korean: "영구 삭제", english: "Delete Permanently"), role: .destructive) {
+                deleteExpiredTodos()
+            }
+        } message: {
+            Text(expiredTodoAlertMessage)
+        }
+        .alert(
+            routineDeletionAlertTitle,
+            isPresented: $isShowingRoutineDeletionAlert
+        ) {
+            Button(appLanguage.text(korean: "취소", english: "Cancel"), role: .cancel) {
+                routineDeletionCandidates = []
+            }
+            Button(appLanguage.text(korean: "확인", english: "Confirm"), role: .destructive) {
+                deleteRoutineSeriesTodos(routineDeletionCandidates)
+                routineDeletionCandidates = []
+            }
+        } message: {
+            Text(routineDeletionAlertMessage)
+        }
+    }
+
+    private var tabView: some View {
         TabView(selection: $selectedTab) {
             Tab(appLanguage.anniversaryTabTitle, systemImage: "gift", value: .anniversaries) {
                 NavigationStack {
@@ -160,7 +273,8 @@ struct ContentView: View {
                         onToggleCompletion: toggleTodoCompletion,
                         onToggleContentCheckbox: toggleTodoContentCheckbox,
                         onUpdateTodo: updateTodo,
-                        onDelete: deleteTodos
+                        onDelete: deleteTodos,
+                        onMovePriority: moveTodoPriority
                     )
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
@@ -179,7 +293,9 @@ struct ContentView: View {
                         MonthCalendarView(
                             selectedDate: $selectedDate,
                             displayedMonth: $displayedMonth,
-                            todos: todos
+                            dropTargetDate: $calendarDropTargetDate,
+                            todos: todos,
+                            onMoveTodoToDate: moveTodoToCalendarDate
                         ) { date in
                             withAnimation(.snappy) {
                                 selectedDate = date
@@ -241,67 +357,6 @@ struct ContentView: View {
             }
 
         }
-        .preferredColorScheme(appAppearance.colorScheme)
-        .environment(\.locale, Locale(identifier: appLanguage.localeIdentifier))
-        .environment(\.appLanguage, appLanguage)
-        .sheet(isPresented: $isPresentingNewTodoSheet) {
-            TodoEditorSheet(title: appLanguage.text(korean: "새 할 일", english: "New Todo"), initialDraft: newTodoDraft) {
-                draft in
-                addTodo(draft)
-            }
-            .presentationDetents([.large])
-        }
-        .sheet(isPresented: $isShowingSelectedDayPanel) {
-            SelectedDayTodoSheet(
-                selectedDate: selectedDate,
-                todos: selectedDayTodos,
-                initialDraft: selectedDateDraft,
-                onToggleCompletion: toggleTodoCompletion,
-                onToggleContentCheckbox: toggleTodoContentCheckbox,
-                onUpdateTodo: updateTodo,
-                onDelete: { offsets in
-                    deleteTodos(offsets: offsets, from: selectedDayTodos)
-                },
-                onAddTodo: addTodo,
-                onMoveTodo: moveTodo
-            )
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
-        }
-        .task {
-            _ = await NotificationScheduler.requestAuthorization()
-            await NotificationScheduler.rescheduleAll(todos: todos, language: appLanguage)
-            refreshWidgetSnapshot()
-            prepareExpiredTodoDeletionAlert()
-        }
-        .onChange(of: widgetSnapshotSignature) { _, _ in
-            refreshWidgetSnapshot()
-            prepareExpiredTodoDeletionAlert()
-        }
-        .onChange(of: appLanguage) { _, _ in
-            refreshWidgetSnapshot()
-            scheduleAllNotifications()
-        }
-        .alert(
-            expiredTodoAlertTitle,
-            isPresented: Binding(
-                get: { !expiredTodosPendingDeletion.isEmpty },
-                set: { isPresented in
-                    if !isPresented {
-                        ignorePendingExpiredTodos()
-                    }
-                }
-            )
-        ) {
-            Button(appLanguage.text(korean: "나중에", english: "Later"), role: .cancel) {
-                ignorePendingExpiredTodos()
-            }
-            Button(appLanguage.text(korean: "영구 삭제", english: "Delete Permanently"), role: .destructive) {
-                deleteExpiredTodos()
-            }
-        } message: {
-            Text(expiredTodoAlertMessage)
-        }
     }
 
     private var addTodoToolbarButton: some View {
@@ -314,10 +369,32 @@ struct ContentView: View {
     }
 
     private func toggleTodoCompletion(_ todo: TodoItem) {
-        withAnimation {
-            todo.isCompleted.toggle()
+        todo.isCompleted.toggle()
+        Task { @MainActor in
+            refreshWidgetSnapshot()
         }
+    }
+
+    private func moveTodoPriority(_ todo: TodoItem, to priority: TodoPriorityQuadrant) {
+        guard todo.priority != priority else {
+            return
+        }
+
+        withAnimation(.easeInOut(duration: 0.2)) {
+            todo.priority = priority
+        }
+        try? modelContext.save()
         refreshWidgetSnapshot()
+    }
+
+    private func moveTodoToCalendarDate(_ todo: TodoItem, date: Date) {
+        moveTodo(todo, date: date, before: nil)
+
+        withAnimation(.snappy) {
+            selectedDate = date
+            displayedMonth = date
+            isShowingSelectedDayPanel = false
+        }
     }
 
     private func toggleTodoContentCheckbox(_ todo: TodoItem, lineIndex: Int) {
@@ -353,6 +430,7 @@ struct ContentView: View {
         draft.scheduledStartAt = targetStart
         updateTodo(todo, draft: draft)
         todo.timelineSortOrder = sortOrder(forMoving: todo, to: date, before: targetTodo)
+        try? modelContext.save()
         refreshWidgetSnapshot()
     }
 
@@ -433,7 +511,10 @@ struct ContentView: View {
             scheduledStartAt: draft.scheduledStartAt,
             scheduledEndAt: draft.scheduledEndAt,
             locationLatitude: draft.locationLatitude,
-            locationLongitude: draft.locationLongitude
+            locationLongitude: draft.locationLongitude,
+            routineSeriesID: draft.routineSeriesID,
+            routineFrequency: draft.routine.isEnabled ? draft.routine.frequency : .none,
+            routineWeekdays: draft.routine.selectedWeekdays
         )
         modelContext.insert(todo)
 
@@ -453,50 +534,55 @@ struct ContentView: View {
     }
 
     private func expandedTodoDrafts(from draft: TodoDraft) -> [TodoDraft] {
-        guard draft.routine.isEnabled, draft.scheduledStartAt != nil else {
+        guard draft.routine.isEnabled, let anchorStart = draft.scheduledStartAt else {
             return [copyDraftForInsertion(draft)]
         }
 
         let calendar = Calendar.current
-        let count = draft.routine.normalizedOccurrenceCount
-        let occurrenceDrafts = (0..<count).compactMap { index in
-            shiftedDraft(draft, occurrenceIndex: index, calendar: calendar)
+        let seriesID = UUID()
+        let occurrenceDates = draft.routine.occurrenceDates(
+            startDate: anchorStart,
+            calendar: calendar
+        )
+
+        guard !occurrenceDates.isEmpty else {
+            return [copyDraftForInsertion(draft)]
         }
 
-        return occurrenceDrafts.isEmpty ? [copyDraftForInsertion(draft)] : occurrenceDrafts
+        return occurrenceDates.map { occurrenceStart in
+            draftForOccurrence(
+                draft,
+                occurrenceStart: occurrenceStart,
+                anchorStart: anchorStart,
+                calendar: calendar,
+                routineSeriesID: seriesID
+            )
+        }
     }
 
-    private func shiftedDraft(
+    private func draftForOccurrence(
         _ draft: TodoDraft,
-        occurrenceIndex: Int,
-        calendar: Calendar
-    ) -> TodoDraft? {
-        guard let (component, value) = routineDateOffset(
-            for: draft.routine,
-            occurrenceIndex: occurrenceIndex
-        ) else {
-            return occurrenceIndex == 0 ? copyDraftForInsertion(draft) : nil
+        occurrenceStart: Date,
+        anchorStart: Date,
+        calendar: Calendar,
+        routineSeriesID: UUID
+    ) -> TodoDraft {
+        let dayOffset = calendar.dateComponents(
+            [.day],
+            from: calendar.startOfDay(for: anchorStart),
+            to: calendar.startOfDay(for: occurrenceStart)
+        ).day ?? 0
+
+        let scheduledEndAt = draft.scheduledEndAt.flatMap {
+            calendar.date(byAdding: .day, value: dayOffset, to: $0)
         }
 
-        let scheduledStartAt = shiftedDate(
-            draft.scheduledStartAt,
-            component: component,
-            value: value,
-            calendar: calendar
-        )
-        let scheduledEndAt = shiftedDate(
-            draft.scheduledEndAt,
-            component: component,
-            value: value,
-            calendar: calendar
-        )
         let reminders = draft.reminders.map { reminder in
             ReminderDraft(
-                fireDate: shiftedDate(
-                    reminder.fireDate,
-                    component: component,
-                    value: value,
-                    calendar: calendar
+                fireDate: calendar.date(
+                    byAdding: .day,
+                    value: dayOffset,
+                    to: reminder.fireDate
                 ) ?? reminder.fireDate,
                 repeatRule: reminder.repeatRule,
                 deliveryStyle: reminder.deliveryStyle,
@@ -506,51 +592,19 @@ struct ContentView: View {
 
         return copyDraftForInsertion(
             draft,
-            scheduledStartAt: scheduledStartAt,
+            scheduledStartAt: occurrenceStart,
             scheduledEndAt: scheduledEndAt,
-            reminders: reminders
+            reminders: reminders,
+            routineSeriesID: routineSeriesID
         )
-    }
-
-    private func routineDateOffset(
-        for routine: TodoRoutineDraft,
-        occurrenceIndex: Int
-    ) -> (Calendar.Component, Int)? {
-        switch routine.frequency {
-        case .none:
-            nil
-        case .daily, .weekly, .monthly, .yearly:
-            routine.frequency.dateComponent.map { ($0, occurrenceIndex) }
-        case .custom:
-            (
-                routine.customUnit.dateComponent,
-                occurrenceIndex * routine.normalizedCustomInterval
-            )
-        }
-    }
-
-    private func shiftedDate(
-        _ date: Date?,
-        component: Calendar.Component,
-        value: Int,
-        calendar: Calendar
-    ) -> Date? {
-        guard let date else {
-            return nil
-        }
-
-        guard value != 0 else {
-            return date
-        }
-
-        return calendar.date(byAdding: component, value: value, to: date)
     }
 
     private func copyDraftForInsertion(
         _ draft: TodoDraft,
         scheduledStartAt: Date? = nil,
         scheduledEndAt: Date? = nil,
-        reminders: [ReminderDraft]? = nil
+        reminders: [ReminderDraft]? = nil,
+        routineSeriesID: UUID? = nil
     ) -> TodoDraft {
         TodoDraft(
             title: draft.title,
@@ -579,7 +633,9 @@ struct ContentView: View {
                     deliveryStyle: reminder.deliveryStyle,
                     isEnabled: reminder.isEnabled
                 )
-            }
+            },
+            routine: draft.routine,
+            routineSeriesID: routineSeriesID ?? draft.routineSeriesID
         )
     }
 
@@ -650,11 +706,46 @@ struct ContentView: View {
     }
 
     private func deleteTodos(offsets: IndexSet, from visibleTodos: [TodoItem]) {
-        let deletedIDs = Set(offsets.map { visibleTodos[$0].persistentModelID })
+        let selectedTodos = offsets.map { visibleTodos[$0] }
+
+        if let routineTodo = selectedTodos.first(where: \.isPartOfRoutineSeries) {
+            routineDeletionCandidates = [routineTodo]
+            isShowingRoutineDeletionAlert = true
+            return
+        }
+
+        performDelete(selectedTodos)
+    }
+
+    private func deleteRoutineSeriesTodos(_ seedTodos: [TodoItem]) {
+        let calendar = Calendar.current
+        var todosToDelete: [TodoItem] = []
+
+        for seedTodo in seedTodos {
+            let seriesTodos = seedTodo.routineSeriesTodosIncludingFuture(
+                in: todos,
+                calendar: calendar
+            )
+            todosToDelete.append(contentsOf: seriesTodos)
+        }
+
+        let uniqueTodos = Array(
+            Dictionary(
+                grouping: todosToDelete,
+                by: \.persistentModelID
+            )
+            .compactMap(\.value.first)
+        )
+
+        performDelete(uniqueTodos)
+    }
+
+    private func performDelete(_ todosToDelete: [TodoItem]) {
+        let deletedIDs = Set(todosToDelete.map(\.persistentModelID))
 
         withAnimation {
-            for index in offsets {
-                deleteTodo(visibleTodos[index])
+            for todo in todosToDelete {
+                deleteTodo(todo)
             }
         }
         refreshWidgetSnapshot(

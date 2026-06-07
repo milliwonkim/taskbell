@@ -1,0 +1,6 @@
+framework module Pods_TaskBell {
+  umbrella header "Pods-TaskBell-umbrella.h"
+
+  export *
+  module * { export * }
+}

@@ -1,0 +1,23 @@
+{
+  "/Users/kimkiwon/Desktop/TaskBell/TaskBell/AppTypes.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AppTypes.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AppTypes.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AppTypes.dia",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AppTypes.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AppTypes.swiftdeps"
+  },
+  "/Users/kimkiwon/Desktop/TaskBell/TaskBell/AttachmentPreviewViews.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AttachmentPreviewViews.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AttachmentPreviewViews.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AttachmentPreviewViews.dia",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AttachmentPreviewViews.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/AttachmentPreviewViews.swiftdeps"
+  },
+  "/Users/kimkiwon/Desktop/TaskBell/TaskBell/ContentView.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/ContentView.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/ContentView.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/ContentView.dia",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/ContentView.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/ContentView.swiftdeps"
+  }
+}

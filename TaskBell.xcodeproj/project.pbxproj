@@ -10,6 +10,7 @@
 		7978186F2FC94A99008B4856 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7978186E2FC94A99008B4856 /* WidgetKit.framework */; };
 		797818712FC94A99008B4856 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 797818702FC94A99008B4856 /* SwiftUI.framework */; };
 		797818822FC94A9B008B4856 /* TaskBellWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7978186C2FC94A99008B4856 /* TaskBellWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		79D5FBB52FD458DD0042918D /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = A1SPM022FC9000300000001 /* GoogleMobileAds */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -94,6 +95,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				79D5FBB52FD458DD0042918D /* GoogleMobileAds in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -148,8 +150,6 @@
 				797818722FC94A99008B4856 /* TaskBellWidget */,
 			);
 			name = TaskBellWidgetExtension;
-			packageProductDependencies = (
-			);
 			productName = TaskBellWidgetExtension;
 			productReference = 7978186C2FC94A99008B4856 /* TaskBellWidgetExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -162,6 +162,7 @@
 				7987DA402FC925B400448138 /* Frameworks */,
 				7987DA412FC925B400448138 /* Resources */,
 				797818832FC94A9B008B4856 /* Embed Foundation Extensions */,
+				A1ADMOB12FC9000400000001 /* Inject AdMob Application ID */,
 			);
 			buildRules = (
 			);
@@ -173,6 +174,7 @@
 			);
 			name = TaskBell;
 			packageProductDependencies = (
+				A1SPM022FC9000300000001 /* GoogleMobileAds */,
 			);
 			productName = TaskBell;
 			productReference = 7987DA432FC925B400448138 /* TaskBell.app */;
@@ -205,6 +207,9 @@
 			);
 			mainGroup = 7987DA3A2FC925B400448138;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A1SPM012FC9000300000001 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 7987DA442FC925B400448138 /* Products */;
 			projectDirPath = "";
@@ -232,6 +237,25 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		A1ADMOB12FC9000400000001 /* Inject AdMob Application ID */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Inject AdMob Application ID";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -euo pipefail\n\nPLIST=\"${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Info.plist\"\nAPP_ID=\"ca-app-pub-8054978526190901~8544964764\"\n\nif [ ! -f \"${PLIST}\" ]; then\n  echo \"error: App Info.plist not found at ${PLIST}\" >&2\n  exit 1\nfi\n\n/usr/libexec/PlistBuddy -c \"Delete :GADApplicationIdentifier\" \"${PLIST}\" 2>/dev/null || true\n/usr/libexec/PlistBuddy -c \"Add :GADApplicationIdentifier string ${APP_ID}\" \"${PLIST}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		797818682FC94A99008B4856 /* Sources */ = {
@@ -262,22 +286,24 @@
 		797818842FC94A9B008B4856 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = TaskBellWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 395NHZF9ZX;
+				ENABLE_DEBUG_DYLIB = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TaskBellWidget/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = TaskBellWidget;
+				INFOPLIST_KEY_CFBundleDisplayName = TaskBell;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = kiwonkim.TaskBell.TaskBellWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -293,22 +319,24 @@
 		797818852FC94A9B008B4856 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = TaskBellWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 395NHZF9ZX;
+				ENABLE_DEBUG_DYLIB = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TaskBellWidget/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = TaskBellWidget;
+				INFOPLIST_KEY_CFBundleDisplayName = TaskBell;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = kiwonkim.TaskBell.TaskBellWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -330,9 +358,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 395NHZF9ZX;
+				ENABLE_DEBUG_DYLIB = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TaskBell/Info.plist;
+				INFOPLIST_KEY_GADApplicationIdentifier = "ca-app-pub-8054978526190901~8544964764";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -340,8 +370,13 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+					/usr/lib/swift,
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0.3;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = kiwonkim.TaskBell;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -363,9 +398,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 395NHZF9ZX;
+				ENABLE_DEBUG_DYLIB = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TaskBell/Info.plist;
+				INFOPLIST_KEY_GADApplicationIdentifier = "ca-app-pub-8054978526190901~8544964764";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -373,8 +410,13 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+					/usr/lib/swift,
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0.3;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = kiwonkim.TaskBell;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -425,7 +467,7 @@
 				DEVELOPMENT_TEAM = 395NHZF9ZX;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -489,7 +531,7 @@
 				DEVELOPMENT_TEAM = 395NHZF9ZX;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -539,6 +581,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A1SPM012FC9000300000001 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 13.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A1SPM022FC9000300000001 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1SPM012FC9000300000001 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 7987DA3B2FC925B400448138 /* Project object */;
 }

@@ -1,0 +1,23 @@
+{
+  "/Users/kimkiwon/Desktop/TaskBell/TaskBell/Item.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/Item.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/Item.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/Item.dia",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/Item.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/Item.swiftdeps"
+  },
+  "/Users/kimkiwon/Desktop/TaskBell/TaskBell/LiquidGlassAddButton.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/LiquidGlassAddButton.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/LiquidGlassAddButton.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/LiquidGlassAddButton.dia",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/LiquidGlassAddButton.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/LiquidGlassAddButton.swiftdeps"
+  },
+  "/Users/kimkiwon/Desktop/TaskBell/TaskBell/MonthCalendarView.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/MonthCalendarView.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/MonthCalendarView.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/MonthCalendarView.dia",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/MonthCalendarView.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/MonthCalendarView.swiftdeps"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "source": "/Users/kimkiwon/Desktop/TaskBell/TaskBell/MonthCalendarView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "+%lld",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 376
+        }
+      }
+    ]
+  },
+  "version": 1
+}

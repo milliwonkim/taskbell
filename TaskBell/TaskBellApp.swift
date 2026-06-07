@@ -11,6 +11,12 @@ import Foundation
 
 @main
 struct TaskBellApp: App {
+    @UIApplicationDelegateAdaptor(TaskBellAppDelegate.self) private var appDelegate
+
+    init() {
+        AdMobConfiguration.prepare()
+    }
+
     var sharedModelContainer: ModelContainer =
         TaskBellModelContainer.makeCloudContainer()
 

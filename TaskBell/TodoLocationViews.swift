@@ -402,10 +402,19 @@ private struct TodoLocationSearchResult: Identifiable {
 
     init(mapItem: MKMapItem, language: AppLanguage) {
         title = mapItem.name ?? language.text(korean: "이름 없는 위치", english: "Unnamed Location")
-        subtitle = mapItem.placemark.title ?? ""
+
+        let location = mapItem.location
         coordinate = TodoLocationCoordinate(
-            latitude: mapItem.placemark.coordinate.latitude,
-            longitude: mapItem.placemark.coordinate.longitude
+            latitude: location.coordinate.latitude,
+            longitude: location.coordinate.longitude
         )
+
+        subtitle =
+            mapItem.address?.fullAddress
+            ?? mapItem.addressRepresentations?.fullAddress(
+                includingRegion: true,
+                singleLine: true
+            )
+            ?? ""
     }
 }

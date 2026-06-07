@@ -1,0 +1,23 @@
+{
+  "/Users/kimkiwon/Desktop/TaskBell/TaskBell/NotificationScheduler.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/NotificationScheduler.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/NotificationScheduler.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/NotificationScheduler.dia",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/NotificationScheduler.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/NotificationScheduler.swiftdeps"
+  },
+  "/Users/kimkiwon/Desktop/TaskBell/TaskBell/PriorityTodoListView.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/PriorityTodoListView.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/PriorityTodoListView.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/PriorityTodoListView.dia",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/PriorityTodoListView.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/PriorityTodoListView.swiftdeps"
+  },
+  "/Users/kimkiwon/Desktop/TaskBell/TaskBell/Reminder+Draft.swift" : {
+    "const-values" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/Reminder+Draft.swiftconstvalues",
+    "dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/Reminder+Draft.d",
+    "diagnostics" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/Reminder+Draft.dia",
+    "object" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/Reminder+Draft.o",
+    "swift-dependencies" : "/Users/kimkiwon/Desktop/TaskBell/.derivedData/Build/Intermediates.noindex/TaskBell.build/Debug-iphonesimulator/TaskBell.build/Objects-normal/arm64/Reminder+Draft.swiftdeps"
+  }
+}
