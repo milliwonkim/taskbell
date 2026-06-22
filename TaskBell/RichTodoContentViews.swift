@@ -176,14 +176,18 @@ struct RichTodoContentView: View {
     private func blockView(_ block: RichTodoContentBlock) -> some View {
         switch block.kind {
         case .paragraph:
-            RichInlineText(text: block.text)
+            RichInlineText(
+                text: block.text,
+                style: .init(compact: compact)
+            )
                 .font(compact ? .caption : .body)
-                .foregroundStyle(compact ? .secondary : .primary)
                 .lineLimit(compact ? 2 : nil)
         case .strongParagraph:
-            RichInlineText(text: block.text)
+            RichInlineText(
+                text: block.text,
+                style: .init(compact: compact, emphasized: true)
+            )
                 .font(compact ? .caption.weight(.semibold) : .headline)
-                .foregroundStyle(compact ? .secondary : .primary)
                 .lineLimit(compact ? 2 : nil)
         case .checkbox(let isChecked):
             HStack(alignment: .top, spacing: compact ? 4 : 7) {
@@ -209,10 +213,11 @@ struct RichTodoContentView: View {
                 .accessibilityLabel(isChecked ? appLanguage.text(korean: "체크 해제", english: "Uncheck") : appLanguage.text(korean: "체크", english: "Check"))
 
                 if !block.text.isEmpty {
-                    RichInlineText(text: block.text)
+                    RichInlineText(
+                        text: block.text,
+                        style: .init(compact: compact, strikethrough: isChecked)
+                    )
                         .font(compact ? .caption : .body)
-                        .foregroundStyle(compact ? .secondary : .primary)
-                        .strikethrough(isChecked)
                         .lineLimit(compact ? 1 : nil)
                         .padding(.top, compact ? 6 : 11)
                 }
@@ -223,9 +228,11 @@ struct RichTodoContentView: View {
                     .font(compact ? .caption : .body)
                     .foregroundStyle(.secondary)
 
-                RichInlineText(text: block.text)
+                RichInlineText(
+                    text: block.text,
+                    style: .init(compact: compact)
+                )
                     .font(compact ? .caption : .body)
-                    .foregroundStyle(compact ? .secondary : .primary)
                     .lineLimit(compact ? 1 : nil)
             }
         case .quote:
@@ -234,10 +241,11 @@ struct RichTodoContentView: View {
                     .fill(.secondary.opacity(0.35))
                     .frame(width: 3)
 
-                RichInlineText(text: block.text)
+                RichInlineText(
+                    text: block.text,
+                    style: .init(compact: compact, italic: true)
+                )
                     .font(compact ? .caption : .body)
-                    .foregroundStyle(.secondary)
-                    .italic()
                     .lineLimit(compact ? 1 : nil)
             }
         }
@@ -267,11 +275,19 @@ enum RichTodoContentFormatter {
     }
 }
 
+private struct RichInlineTextStyle {
+    var compact = false
+    var emphasized = false
+    var italic = false
+    var strikethrough = false
+}
+
 private struct RichInlineText: View {
     let text: String
+    var style: RichInlineTextStyle = .init()
 
     var body: some View {
-        RichTodoContentParser.inlineText(from: text)
+        RichTodoContentParser.inlineText(from: text, style: style)
     }
 }
 
@@ -334,21 +350,12 @@ private enum RichTodoContentParser {
             }
     }
 
-    static func inlineText(from source: String) -> Text {
+    static func inlineText(from source: String, style: RichInlineTextStyle = .init()) -> Text {
         var attributed = AttributedString()
+        let baseColor: Color = style.compact ? .secondary : .primary
 
         for segment in inlineSegments(from: source) {
-            var segmentAttributed = AttributedString(segment.text)
-
-            if segment.isBold {
-                segmentAttributed.inlinePresentationIntent = .stronglyEmphasized
-            }
-
-            if segment.isUnderlined {
-                segmentAttributed.underlineStyle = .single
-            }
-
-            attributed.append(segmentAttributed)
+            appendSegment(segment, baseColor: baseColor, style: style, to: &attributed)
         }
 
         guard !attributed.characters.isEmpty else {
@@ -356,6 +363,131 @@ private enum RichTodoContentParser {
         }
 
         return Text(attributed)
+    }
+
+    private static func appendSegment(
+        _ segment: RichInlineSegment,
+        baseColor: Color,
+        style: RichInlineTextStyle,
+        to attributed: inout AttributedString
+    ) {
+        if let linkURL = segment.linkURL {
+            var linkAttributed = AttributedString(segment.text)
+            applyPresentationStyle(to: &linkAttributed, segment: segment, style: style)
+            linkAttributed.link = linkURL
+            linkAttributed.foregroundColor = .blue
+            if !segment.isUnderlined {
+                linkAttributed.underlineStyle = .single
+            }
+            attributed.append(linkAttributed)
+            return
+        }
+
+        appendTextWithDetectedLinks(
+            segment.text,
+            segment: segment,
+            baseColor: baseColor,
+            style: style,
+            to: &attributed
+        )
+    }
+
+    private static func appendTextWithDetectedLinks(
+        _ text: String,
+        segment: RichInlineSegment,
+        baseColor: Color,
+        style: RichInlineTextStyle,
+        to attributed: inout AttributedString
+    ) {
+        let matches = linkMatches(in: text)
+
+        guard !matches.isEmpty else {
+            var plain = AttributedString(text)
+            applyPresentationStyle(to: &plain, segment: segment, style: style)
+            plain.foregroundColor = baseColor
+            attributed.append(plain)
+            return
+        }
+
+        var cursor = text.startIndex
+
+        for match in matches {
+            if cursor < match.range.lowerBound {
+                var prefix = AttributedString(String(text[cursor..<match.range.lowerBound]))
+                applyPresentationStyle(to: &prefix, segment: segment, style: style)
+                prefix.foregroundColor = baseColor
+                attributed.append(prefix)
+            }
+
+            var linkPart = AttributedString(String(text[match.range]))
+            applyPresentationStyle(to: &linkPart, segment: segment, style: style)
+            linkPart.link = match.url
+            linkPart.foregroundColor = .blue
+            if !segment.isUnderlined {
+                linkPart.underlineStyle = .single
+            }
+            attributed.append(linkPart)
+
+            cursor = match.range.upperBound
+        }
+
+        if cursor < text.endIndex {
+            var suffix = AttributedString(String(text[cursor...]))
+            applyPresentationStyle(to: &suffix, segment: segment, style: style)
+            suffix.foregroundColor = baseColor
+            attributed.append(suffix)
+        }
+    }
+
+    private static func applyPresentationStyle(
+        to attributed: inout AttributedString,
+        segment: RichInlineSegment,
+        style: RichInlineTextStyle
+    ) {
+        if segment.isBold || style.emphasized {
+            attributed.inlinePresentationIntent = .stronglyEmphasized
+        }
+
+        if segment.isUnderlined {
+            attributed.underlineStyle = .single
+        }
+
+        if style.italic {
+            attributed.inlinePresentationIntent = .emphasized
+        }
+
+        if style.strikethrough {
+            attributed.strikethroughStyle = .single
+        }
+    }
+
+    private static func linkMatches(in text: String) -> [LinkMatch] {
+        guard let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue) else {
+            return []
+        }
+
+        return detector
+            .matches(in: text, options: [], range: NSRange(text.startIndex..., in: text))
+            .compactMap { match in
+                guard let range = Range(match.range, in: text), let url = match.url else {
+                    return nil
+                }
+
+                return LinkMatch(range: range, url: url)
+            }
+    }
+
+    private static func normalizedURL(from rawValue: String) -> URL? {
+        let trimmed = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return nil
+        }
+
+        if let url = URL(string: trimmed), url.scheme != nil {
+            return url
+        }
+
+        return URL(string: "https://\(trimmed)")
     }
 
     private static func checkboxBlock(from line: String, id: Int) -> RichTodoContentBlock? {
@@ -411,7 +543,15 @@ private enum RichTodoContentParser {
         }
 
         while index < source.endIndex {
-            if source[index...].hasPrefix("**") {
+            if let markdownLink = parseMarkdownLink(
+                at: &index,
+                in: source,
+                isBold: isBold,
+                isUnderlined: isUnderlined
+            ) {
+                flush()
+                segments.append(markdownLink)
+            } else if source[index...].hasPrefix("**") {
                 flush()
                 isBold.toggle()
                 index = source.index(index, offsetBy: 2)
@@ -429,10 +569,54 @@ private enum RichTodoContentParser {
         return segments.isEmpty ? [RichInlineSegment(text: source)] : segments
     }
 
+    private static func parseMarkdownLink(
+        at index: inout String.Index,
+        in source: String,
+        isBold: Bool,
+        isUnderlined: Bool
+    ) -> RichInlineSegment? {
+        guard source[index] == "[",
+              let closeBracket = source[index...].firstIndex(of: "]")
+        else {
+            return nil
+        }
+
+        let afterBracket = source.index(after: closeBracket)
+        guard afterBracket < source.endIndex, source[afterBracket] == "(" else {
+            return nil
+        }
+
+        let urlStart = source.index(after: afterBracket)
+        guard let closeParen = source[urlStart...].firstIndex(of: ")") else {
+            return nil
+        }
+
+        let labelStart = source.index(after: index)
+        let label = String(source[labelStart..<closeBracket])
+        let urlString = String(source[urlStart..<closeParen])
+        guard let url = normalizedURL(from: urlString) else {
+            return nil
+        }
+
+        index = source.index(after: closeParen)
+        return RichInlineSegment(
+            text: label,
+            isBold: isBold,
+            isUnderlined: isUnderlined,
+            linkURL: url
+        )
+    }
+
+}
+
+private struct LinkMatch {
+    let range: Range<String.Index>
+    let url: URL
 }
 
 private struct RichInlineSegment {
     let text: String
     var isBold = false
     var isUnderlined = false
+    var linkURL: URL? = nil
 }

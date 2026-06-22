@@ -25,4 +25,16 @@ extension TodoItem {
                 && candidate.routineAnchorDate(calendar: calendar) >= anchorDate
         }
     }
+
+    func routineSeriesTodos(in allTodos: [TodoItem]) -> [TodoItem] {
+        guard let seriesID = routineSeriesID else {
+            return [self]
+        }
+
+        return allTodos
+            .filter { $0.routineSeriesID == seriesID }
+            .sorted {
+                ($0.scheduledStartAt ?? $0.createdAt) < ($1.scheduledStartAt ?? $1.createdAt)
+            }
+    }
 }

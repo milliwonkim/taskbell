@@ -18,14 +18,186 @@ enum NotificationScheduler {
         }
     }
 
-    static func scheduleMainDate(for todo: TodoItem, language: AppLanguage) async {
+    static func scheduleAll(for todo: TodoItem, language: AppLanguage) async {
+        await cancelAll(for: todo)
+
+        var candidates: [ScheduleCandidate] = []
+        var seenReminderIDs = Set<UUID>()
+
+        for reminder in todo.reminders ?? [] {
+            guard seenReminderIDs.insert(reminder.id).inserted else {
+                continue
+            }
+
+            if let candidate = ScheduleCandidate.reminder(reminder) {
+                candidates.append(candidate)
+            }
+        }
+
+        if todo.scheduleMode != .none, let scheduledStartAt = todo.scheduledStartAt {
+            if let candidate = ScheduleCandidate.mainDate(at: scheduledStartAt) {
+                candidates.append(candidate)
+            }
+        }
+
+        for candidate in deduplicatedCandidates(candidates) {
+            switch candidate.kind {
+            case .mainDate:
+                await addMainDate(for: todo, language: language)
+            case let .reminder(reminder):
+                await addReminder(
+                    reminder,
+                    todo: todo,
+                    language: language
+                )
+            }
+        }
+    }
+
+    static func cancel(_ reminder: Reminder) async {
+        let notificationCenter = UNUserNotificationCenter.current()
+        notificationCenter.removePendingNotificationRequests(withIdentifiers: [reminder.notificationIdentifier])
+        notificationCenter.removeDeliveredNotifications(withIdentifiers: [reminder.notificationIdentifier])
+    }
+
+    static func cancelMainDate(for todo: TodoItem) async {
+        let notificationCenter = UNUserNotificationCenter.current()
+        let identifier = mainDateNotificationIdentifier(for: todo)
+        notificationCenter.removePendingNotificationRequests(withIdentifiers: [identifier])
+        notificationCenter.removeDeliveredNotifications(withIdentifiers: [identifier])
+    }
+
+    static func cancelAll(for todo: TodoItem) async {
+        await cancelMainDate(for: todo)
+
+        var seenReminderIDs = Set<UUID>()
+        for reminder in todo.reminders ?? [] {
+            guard seenReminderIDs.insert(reminder.id).inserted else {
+                continue
+            }
+            await cancel(reminder)
+        }
+    }
+
+    static func rescheduleAll(todos: [TodoItem], language: AppLanguage) async {
+        for todo in todos {
+            await scheduleAll(for: todo, language: language)
+        }
+    }
+
+    private struct ScheduleCandidate {
+        enum Kind {
+            case mainDate
+            case reminder(Reminder)
+        }
+
+        let kind: Kind
+        let slotKey: String
+        let priority: Int
+        let tieBreaker: Date
+
+        static func mainDate(at date: Date) -> ScheduleCandidate? {
+            guard date > .now else {
+                return nil
+            }
+
+            return ScheduleCandidate(
+                kind: .mainDate,
+                slotKey: notificationSlotKey(for: date, repeatRule: .once),
+                priority: 1,
+                tieBreaker: date
+            )
+        }
+
+        static func reminder(_ reminder: Reminder) -> ScheduleCandidate? {
+            guard reminder.isEnabled else {
+                return nil
+            }
+
+            if reminder.repeatRule == .once, reminder.fireDate <= .now {
+                return nil
+            }
+
+            return ScheduleCandidate(
+                kind: .reminder(reminder),
+                slotKey: notificationSlotKey(for: reminder.fireDate, repeatRule: reminder.repeatRule),
+                priority: 0,
+                tieBreaker: reminder.createdAt
+            )
+        }
+    }
+
+    private static func deduplicatedCandidates(_ candidates: [ScheduleCandidate]) -> [ScheduleCandidate] {
+        var winners: [String: ScheduleCandidate] = [:]
+
+        for candidate in candidates {
+            guard let existing = winners[candidate.slotKey] else {
+                winners[candidate.slotKey] = candidate
+                continue
+            }
+
+            if candidate.priority < existing.priority {
+                winners[candidate.slotKey] = candidate
+            } else if candidate.priority == existing.priority,
+                      candidate.tieBreaker < existing.tieBreaker {
+                winners[candidate.slotKey] = candidate
+            }
+        }
+
+        return winners.values.sorted { $0.tieBreaker < $1.tieBreaker }
+    }
+
+    private static func notificationSlotKey(for date: Date, repeatRule: ReminderRepeatRule) -> String {
+        let calendar = Calendar.current
+
+        switch repeatRule {
+        case .once:
+            let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+            return [
+                "once",
+                String(components.year ?? 0),
+                String(components.month ?? 0),
+                String(components.day ?? 0),
+                String(components.hour ?? 0),
+                String(components.minute ?? 0),
+            ].joined(separator: "-")
+        case .daily:
+            let components = calendar.dateComponents([.hour, .minute], from: date)
+            return ["daily", String(components.hour ?? 0), String(components.minute ?? 0)].joined(separator: "-")
+        case .weekly:
+            let components = calendar.dateComponents([.weekday, .hour, .minute], from: date)
+            return [
+                "weekly",
+                String(components.weekday ?? 0),
+                String(components.hour ?? 0),
+                String(components.minute ?? 0),
+            ].joined(separator: "-")
+        case .monthly:
+            let components = calendar.dateComponents([.day, .hour, .minute], from: date)
+            return [
+                "monthly",
+                String(components.day ?? 0),
+                String(components.hour ?? 0),
+                String(components.minute ?? 0),
+            ].joined(separator: "-")
+        case .yearly:
+            let components = calendar.dateComponents([.month, .day, .hour, .minute], from: date)
+            return [
+                "yearly",
+                String(components.month ?? 0),
+                String(components.day ?? 0),
+                String(components.hour ?? 0),
+                String(components.minute ?? 0),
+            ].joined(separator: "-")
+        }
+    }
+
+    private static func addMainDate(for todo: TodoItem, language: AppLanguage) async {
         guard todo.scheduleMode != .none, let scheduledStartAt = todo.scheduledStartAt else {
-            await cancelMainDate(for: todo)
             return
         }
 
         guard scheduledStartAt > .now else {
-            await cancelMainDate(for: todo)
             return
         }
 
@@ -33,6 +205,7 @@ enum NotificationScheduler {
         content.title = notificationTitle(from: todo.title, language: language)
         content.body = mainDateNotificationBody(from: todo.content, language: language)
         content.categoryIdentifier = "todo-reminder"
+        content.userInfo = TodoNotificationPayload.userInfo(for: todo)
         content.attachments = notificationIconAttachments()
         content.sound = .default
 
@@ -48,28 +221,22 @@ enum NotificationScheduler {
         )
 
         do {
-            await cancelMainDate(for: todo)
             try await UNUserNotificationCenter.current().add(request)
         } catch {
             assertionFailure("Failed to schedule main date notification: \(error)")
         }
     }
 
-    static func schedule(_ reminder: Reminder, todoTitle: String, todoContent: String, language: AppLanguage) async {
-        guard reminder.isEnabled else {
-            await cancel(reminder)
-            return
-        }
-
-        if reminder.repeatRule == .once, reminder.fireDate <= .now {
-            await cancel(reminder)
-            return
-        }
-
+    private static func addReminder(
+        _ reminder: Reminder,
+        todo: TodoItem,
+        language: AppLanguage
+    ) async {
         let content = UNMutableNotificationContent()
-        content.title = notificationTitle(from: todoTitle, language: language)
-        content.body = notificationBody(from: todoContent, repeatRule: reminder.repeatRule, language: language)
+        content.title = notificationTitle(from: todo.title, language: language)
+        content.body = notificationBody(from: todo.content, repeatRule: reminder.repeatRule, language: language)
         content.categoryIdentifier = "todo-reminder"
+        content.userInfo = TodoNotificationPayload.userInfo(for: todo)
         content.attachments = notificationIconAttachments()
 
         if reminder.deliveryStyle == .notificationAndVibration {
@@ -88,33 +255,9 @@ enum NotificationScheduler {
         )
 
         do {
-            await cancel(reminder)
             try await UNUserNotificationCenter.current().add(request)
         } catch {
             assertionFailure("Failed to schedule notification: \(error)")
-        }
-    }
-
-    static func cancel(_ reminder: Reminder) async {
-        let notificationCenter = UNUserNotificationCenter.current()
-        notificationCenter.removePendingNotificationRequests(withIdentifiers: [reminder.notificationIdentifier])
-        notificationCenter.removeDeliveredNotifications(withIdentifiers: [reminder.notificationIdentifier])
-    }
-
-    static func cancelMainDate(for todo: TodoItem) async {
-        let notificationCenter = UNUserNotificationCenter.current()
-        let identifier = mainDateNotificationIdentifier(for: todo)
-        notificationCenter.removePendingNotificationRequests(withIdentifiers: [identifier])
-        notificationCenter.removeDeliveredNotifications(withIdentifiers: [identifier])
-    }
-
-    static func rescheduleAll(todos: [TodoItem], language: AppLanguage) async {
-        for todo in todos {
-            await scheduleMainDate(for: todo, language: language)
-
-            for reminder in todo.reminders ?? [] {
-                await schedule(reminder, todoTitle: todo.title, todoContent: todo.content, language: language)
-            }
         }
     }
 

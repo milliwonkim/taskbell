@@ -74,7 +74,12 @@ struct TodoDraft {
                 .sorted { $0.fireDate < $1.fireDate }
                 .map { reminder in
                     ReminderDraft(reminder: reminder)
-                }
+                },
+            routine: TodoRoutineDraft(
+                frequency: todo.routineFrequency,
+                selectedWeekdays: todo.routineWeekdays
+            ),
+            routineSeriesID: todo.routineSeriesID
         )
     }
 }

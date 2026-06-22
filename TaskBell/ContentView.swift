@@ -31,6 +31,10 @@ struct ContentView: View {
     @State private var ignoredExpiredTodoIDs: Set<String> = []
     @State private var routineDeletionCandidates: [TodoItem] = []
     @State private var isShowingRoutineDeletionAlert = false
+    @State private var routineUpdateCandidate: RoutineUpdateCandidate?
+    @State private var isShowingRoutineUpdateAlert = false
+    @State private var notificationDetailTodo: TodoItem?
+    @State private var pendingNotificationTodoID: String?
 
     private var selectedDayTodos: [TodoItem] {
         let calendar = Calendar.current
@@ -123,6 +127,20 @@ struct ContentView: View {
         )
     }
 
+    private var routineUpdateAlertTitle: String {
+        appLanguage.text(
+            korean: "반복 할 일 일정 변경",
+            english: "Update Repeating Todo Schedule"
+        )
+    }
+
+    private var routineUpdateAlertMessage: String {
+        appLanguage.text(
+            korean: "같은 반복 일정이 다른 날짜에도 있습니다. 변경한 할 일 시간이나 미리알림을 다른 반복 일정에도 적용할까요?",
+            english: "This repeating todo exists on other dates too. Apply the updated schedule and reminders to the other repeats?"
+        )
+    }
+
     private var calendarNavigationTitle: String {
         appLanguage.formattedMonthYear(for: displayedMonth)
     }
@@ -174,6 +192,21 @@ struct ContentView: View {
             }
             .presentationDetents([.large])
         }
+        .sheet(item: $notificationDetailTodo) { todo in
+            TodoDetailSheet(
+                todo: todo,
+                onToggleCompletion: {
+                    toggleTodoCompletion(todo)
+                },
+                onToggleContentCheckbox: { lineIndex in
+                    toggleTodoContentCheckbox(todo, lineIndex: lineIndex)
+                },
+                onUpdateTodo: { draft in
+                    updateTodo(todo, draft: draft)
+                }
+            )
+            .presentationDetents([.large])
+        }
         .sheet(isPresented: $isShowingSelectedDayPanel) {
             SelectedDayTodoSheet(
                 selectedDate: selectedDate,
@@ -212,6 +245,16 @@ struct ContentView: View {
         .onChange(of: widgetSnapshotSignature) { _, _ in
             refreshWidgetSnapshot()
             prepareExpiredTodoDeletionAlert()
+            presentNotificationTodoDetailIfPossible()
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(for: TodoNotificationPayload.openTodoDetailNotification)
+        ) { notification in
+            guard let todoID = notification.userInfo?[TodoNotificationPayload.todoIDKey] as? String else {
+                return
+            }
+            pendingNotificationTodoID = todoID
+            presentNotificationTodoDetailIfPossible()
         }
         .onChange(of: appLanguage) { _, _ in
             refreshWidgetSnapshot()
@@ -250,6 +293,22 @@ struct ContentView: View {
             }
         } message: {
             Text(routineDeletionAlertMessage)
+        }
+        .alert(
+            routineUpdateAlertTitle,
+            isPresented: $isShowingRoutineUpdateAlert
+        ) {
+            Button(appLanguage.text(korean: "취소", english: "Cancel"), role: .cancel) {
+                routineUpdateCandidate = nil
+            }
+            Button(appLanguage.text(korean: "이 할 일만", english: "This Todo Only")) {
+                applyPendingRoutineUpdate(applyToSeries: false)
+            }
+            Button(appLanguage.text(korean: "모든 반복 할 일", english: "All Repeating Todos")) {
+                applyPendingRoutineUpdate(applyToSeries: true)
+            }
+        } message: {
+            Text(routineUpdateAlertMessage)
         }
     }
 
@@ -521,13 +580,11 @@ struct ContentView: View {
         for attachmentDraft in draft.attachments {
             let attachment = TodoAttachment(draft: attachmentDraft, todo: todo)
             modelContext.insert(attachment)
-            todo.attachments = (todo.attachments ?? []) + [attachment]
         }
 
         for reminderDraft in draft.reminders {
             let reminder = Reminder(draft: reminderDraft, todo: todo)
             modelContext.insert(reminder)
-            todo.reminders = (todo.reminders ?? []) + [reminder]
         }
 
         return todo
@@ -640,6 +697,109 @@ struct ContentView: View {
     }
 
     private func updateTodo(_ todo: TodoItem, draft: TodoDraft) {
+        let originalDraft = TodoDraft(todo: todo)
+
+        if shouldPromptForRoutineSeriesUpdate(
+            todo: todo,
+            draft: draft,
+            originalDraft: originalDraft
+        ) {
+            routineUpdateCandidate = RoutineUpdateCandidate(
+                todo: todo,
+                draft: draft,
+                originalDraft: originalDraft
+            )
+            isShowingRoutineUpdateAlert = true
+            return
+        }
+
+        performUpdateTodo(todo, draft: draft)
+    }
+
+    private func shouldPromptForRoutineSeriesUpdate(
+        todo: TodoItem,
+        draft: TodoDraft,
+        originalDraft: TodoDraft
+    ) -> Bool {
+        guard todo.isPartOfRoutineSeries else {
+            return false
+        }
+
+        guard todo.routineSeriesTodos(in: todos).count > 1 else {
+            return false
+        }
+
+        return TodoRoutineSeriesUpdate.hasScheduleOrReminderChanges(
+            draft: draft,
+            comparedTo: originalDraft
+        )
+    }
+
+    private func applyPendingRoutineUpdate(applyToSeries: Bool) {
+        guard let candidate = routineUpdateCandidate else {
+            return
+        }
+
+        defer { routineUpdateCandidate = nil }
+
+        if applyToSeries {
+            applyRoutineSeriesScheduleUpdate(candidate: candidate)
+        } else {
+            performUpdateTodo(candidate.todo, draft: candidate.draft)
+        }
+    }
+
+    private func applyRoutineSeriesScheduleUpdate(candidate: RoutineUpdateCandidate) {
+        let seriesTodos = candidate.todo.routineSeriesTodos(in: todos)
+
+        withAnimation {
+            for target in seriesTodos {
+                if target.persistentModelID == candidate.todo.persistentModelID {
+                    performUpdateTodo(target, draft: candidate.draft)
+                } else {
+                    applySeriesScheduleAndReminders(
+                        to: target,
+                        draft: candidate.draft,
+                        anchorStart: candidate.draft.scheduledStartAt
+                            ?? candidate.originalDraft.scheduledStartAt
+                    )
+                }
+            }
+        }
+
+        refreshWidgetSnapshot()
+    }
+
+    private func applySeriesScheduleAndReminders(
+        to target: TodoItem,
+        draft: TodoDraft,
+        anchorStart: Date?
+    ) {
+        target.scheduleMode = draft.scheduleMode
+        target.scheduledStartAt = TodoRoutineSeriesUpdate.mergedStartDate(
+            for: target,
+            seedNewStart: draft.scheduledStartAt
+        )
+        target.scheduledEndAt = TodoRoutineSeriesUpdate.mergedEndDate(
+            for: target,
+            scheduleMode: draft.scheduleMode,
+            seedNewStart: draft.scheduledStartAt,
+            seedNewEnd: draft.scheduledEndAt
+        )
+
+        let targetStart = target.scheduledStartAt ?? target.createdAt
+        replaceReminders(
+            on: target,
+            with: TodoRoutineSeriesUpdate.reminderDrafts(
+                from: draft,
+                targetStart: targetStart,
+                anchorStart: anchorStart
+            )
+        )
+        scheduleNotifications(for: target)
+    }
+
+    private func performUpdateTodo(_ todo: TodoItem, draft: TodoDraft) {
         todo.title = draft.title
         todo.content = draft.content
         todo.isCompleted = draft.isCompleted
@@ -671,7 +831,6 @@ struct ContentView: View {
             } else {
                 let attachment = TodoAttachment(draft: attachmentDraft, todo: todo)
                 modelContext.insert(attachment)
-                todo.attachments = (todo.attachments ?? []) + [attachment]
             }
         }
 
@@ -698,11 +857,24 @@ struct ContentView: View {
             } else {
                 let reminder = Reminder(draft: reminderDraft, todo: todo)
                 modelContext.insert(reminder)
-                todo.reminders = (todo.reminders ?? []) + [reminder]
             }
         }
         refreshWidgetSnapshot()
         scheduleNotifications(for: todo)
+    }
+
+    private func replaceReminders(on todo: TodoItem, with drafts: [ReminderDraft]) {
+        for reminder in todo.reminders ?? [] {
+            Task {
+                await NotificationScheduler.cancel(reminder)
+            }
+            modelContext.delete(reminder)
+        }
+
+        for reminderDraft in drafts {
+            let reminder = Reminder(draft: reminderDraft, todo: todo)
+            modelContext.insert(reminder)
+        }
     }
 
     private func deleteTodos(offsets: IndexSet, from visibleTodos: [TodoItem]) {
@@ -785,13 +957,7 @@ struct ContentView: View {
 
     private func deleteTodo(_ todo: TodoItem) {
         Task {
-            await NotificationScheduler.cancelMainDate(for: todo)
-        }
-
-        for reminder in todo.reminders ?? [] {
-            Task {
-                await NotificationScheduler.cancel(reminder)
-            }
+            await NotificationScheduler.cancelAll(for: todo)
         }
 
         modelContext.delete(todo)
@@ -862,17 +1028,51 @@ struct ContentView: View {
 
     private func scheduleNotifications(for todo: TodoItem) {
         Task {
-            await NotificationScheduler.scheduleMainDate(for: todo, language: appLanguage)
+            await NotificationScheduler.scheduleAll(for: todo, language: appLanguage)
+        }
+    }
 
-            for reminder in todo.reminders ?? [] {
-                await NotificationScheduler.schedule(
-                    reminder,
-                    todoTitle: todo.title,
-                    todoContent: todo.content,
-                    language: appLanguage
-                )
+    private func presentNotificationTodoDetailIfPossible() {
+        guard let todoID = pendingNotificationTodoID else {
+            return
+        }
+
+        guard let todo = todos.first(where: { self.todoID($0) == todoID }) else {
+            return
+        }
+
+        pendingNotificationTodoID = nil
+
+        if let date = calendarDateForNotificationPresentation(todo) {
+            withAnimation(.snappy) {
+                selectedTab = .calendar
+                selectedDate = date
+                displayedMonth = date
             }
         }
+
+        notificationDetailTodo = todo
+    }
+
+    private func calendarDateForNotificationPresentation(_ todo: TodoItem) -> Date? {
+        let calendar = Calendar.current
+
+        if let scheduledStartAt = todo.scheduledStartAt {
+            switch todo.scheduleMode {
+            case .none:
+                break
+            case .singleDay:
+                return calendar.startOfDay(for: scheduledStartAt)
+            case .dateRange:
+                let today = calendar.startOfDay(for: .now)
+                if todo.isScheduled(on: today, calendar: calendar) {
+                    return today
+                }
+                return calendar.startOfDay(for: scheduledStartAt)
+            }
+        }
+
+        return calendar.startOfDay(for: .now)
     }
 }
 
@@ -882,4 +1082,10 @@ struct ContentView: View {
             for: [TodoItem.self, TodoAttachment.self, Reminder.self, AnniversaryItem.self],
             inMemory: true
         )
+}
+
+private struct RoutineUpdateCandidate {
+    let todo: TodoItem
+    let draft: TodoDraft
+    let originalDraft: TodoDraft
 }
